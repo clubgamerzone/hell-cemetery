@@ -10,7 +10,6 @@ import EnemiesPage from './pages/EnemiesPage';
 import ItemsPage from './pages/ItemsPage';
 import CraftingPage from './pages/CraftingPage';
 import GameDataPage from './pages/GameDataPage';
-import AdminSecurityPage from './pages/AdminSecurityPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 export default function App() {
@@ -34,7 +33,6 @@ export default function App() {
             <Route path="/items" element={<ItemsPage />} />
             <Route path="/crafting" element={<CraftingPage />} />
             <Route path="/game-data" element={<GameDataPage />} />
-            <Route path="/admin/security" element={<AdminSecurityPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           </Routes>
         </main>

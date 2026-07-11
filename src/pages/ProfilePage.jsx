@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 import { useAuth } from '../context/AuthContext';
 import {
   getPlayerProfile,
@@ -16,6 +17,167 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import CollapsibleJson from '../components/CollapsibleJson';
 import styles from './ProfilePage.module.css';
+
+function getTwoFactorErrorMessage(error) {
+  switch (error?.code) {
+    case 'auth/requires-recent-login':
+      return 'Please log out, sign in again, and then retry this security change.';
+    case 'auth/invalid-verification-code':
+      return 'The authenticator code was not accepted.';
+    default:
+      return error?.message || 'Two-factor authentication update failed.';
+  }
+}
+
+function AdminTwoFactorPanel() {
+  const {
+    currentUser,
+    getTotpFactors,
+    startTotpEnrollment,
+    enrollTotp,
+    unenrollTotp,
+  } = useAuth();
+  const [setup, setSetup] = useState(null);
+  const [qrImageUrl, setQrImageUrl] = useState('');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const totpFactors = getTotpFactors();
+  const hasTotp = totpFactors.length > 0;
+
+  async function handleStartSetup() {
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      const enrollmentSetup = await startTotpEnrollment(currentUser.email || currentUser.uid);
+      setSetup(enrollmentSetup);
+      setQrImageUrl(await QRCode.toDataURL(enrollmentSetup.qrCodeUrl, {
+        errorCorrectionLevel: 'M',
+        margin: 2,
+        width: 220,
+      }));
+    } catch (err) {
+      setError(getTwoFactorErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleEnroll(event) {
+    event.preventDefault();
+    if (!setup) return;
+
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      await enrollTotp(setup.secret, code.trim());
+      setMessage('Two-factor authentication is enabled.');
+      setSetup(null);
+      setQrImageUrl('');
+      setCode('');
+    } catch (err) {
+      setError(getTwoFactorErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDisable() {
+    const factorUid = totpFactors[0]?.uid;
+    if (!factorUid) return;
+
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      await unenrollTotp(factorUid);
+      setMessage('Two-factor authentication is disabled.');
+      setSetup(null);
+      setQrImageUrl('');
+      setCode('');
+    } catch (err) {
+      setError(getTwoFactorErrorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <GothicCard title="Admin Two-Factor Authentication" flat className={styles.accountCard}>
+      {error && <ErrorMessage message={error} />}
+      {message && <div className="notice notice--info">{message}</div>}
+
+      {!setup && (
+        <div className={styles.securityActions}>
+          <p className={styles.securityText}>
+            Status: {hasTotp ? 'Enabled' : 'Disabled'}
+          </p>
+          {hasTotp ? (
+            <GothicButton type="button" variant="ghost" size="small" onClick={handleDisable} disabled={busy}>
+              {busy ? 'Disabling...' : 'Disable Two-Factor'}
+            </GothicButton>
+          ) : (
+            <GothicButton type="button" size="small" onClick={handleStartSetup} disabled={busy}>
+              {busy ? 'Preparing...' : 'Enable Two-Factor'}
+            </GothicButton>
+          )}
+        </div>
+      )}
+
+      {setup && (
+        <form onSubmit={handleEnroll} className={styles.securityForm}>
+          {qrImageUrl && (
+            <img
+              src={qrImageUrl}
+              alt="Two-factor authentication QR code"
+              className={styles.qrCode}
+            />
+          )}
+          <p className={styles.securityText}>
+            Manual key: <code>{setup.secret.secretKey}</code>
+          </p>
+          <label className={styles.securityField} htmlFor="totp-code">
+            <span>Authenticator Code</span>
+            <input
+              id="totp-code"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={code}
+              onChange={(event) => setCode(event.target.value)}
+              required
+              minLength={6}
+              placeholder="123456"
+            />
+          </label>
+          <div className={styles.securityActions}>
+            <GothicButton type="submit" size="small" disabled={busy || code.trim().length < 6}>
+              {busy ? 'Enabling...' : 'Finish Setup'}
+            </GothicButton>
+            <GothicButton
+              type="button"
+              variant="ghost"
+              size="small"
+              onClick={() => {
+                setSetup(null);
+                setQrImageUrl('');
+                setCode('');
+                setError('');
+              }}
+              disabled={busy}
+            >
+              Cancel
+            </GothicButton>
+          </div>
+        </form>
+      )}
+    </GothicCard>
+  );
+}
 
 function DataSection({ title, data, path, showDebug = false }) {
   if (!hasMeaningfulData(data)) {
@@ -139,6 +301,8 @@ export default function ProfilePage() {
           )}
         </dl>
       </GothicCard>
+
+      {isAdmin && <AdminTwoFactorPanel />}
 
       {loading && <LoadingSpinner message="Loading profile data..." />}
       <ErrorMessage message={error} onRetry={loadProfile} />

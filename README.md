@@ -60,7 +60,7 @@ Admin-only debug views are restricted in the UI to Firebase UID:
 PPe2ja8SlPRwmx1pLvnihWKhtqa2
 ```
 
-The admin security page at `/admin/security` can enroll an authenticator app using Firebase TOTP MFA. Enable multi-factor authentication and TOTP in Firebase Authentication before using it. Client-side hiding is not a substitute for database rules; keep private data protected by Realtime Database rules and do not make sensitive nodes publicly readable.
+The admin profile page can enable or disable an authenticator app using Firebase TOTP MFA. These controls are only shown to the admin UID. Enable multi-factor authentication and TOTP in Firebase Authentication before using it. Client-side hiding is not a substitute for database rules; keep private data protected by Realtime Database rules and do not make sensitive nodes publicly readable.
 
 Admin users can edit enemy, item, and crafting recipe records directly from their catalog cards. These editors write back to Firebase and require rules that allow the admin UID to write `EnemySettings`, `ItemSettings` / `Items`, and `CraftingSettings` / recipe nodes. Enemy and recipe saves validate item references against the current item catalog before writing.
 

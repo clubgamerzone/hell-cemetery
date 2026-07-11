@@ -83,6 +83,61 @@
   border-radius: var(--radius-sm);
 }
 
+.securityActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.securityText {
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.securityText code {
+  color: var(--color-gold);
+  font-family: Consolas, Monaco, monospace;
+  overflow-wrap: anywhere;
+}
+
+.securityForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.securityField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.securityField span {
+  font-family: var(--font-display);
+  color: var(--color-gray-light);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.securityField input {
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+}
+
+.qrCode {
+  display: block;
+  width: min(220px, 100%);
+  aspect-ratio: 1;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
 @media (max-width: 600px) {
   .header {
     flex-direction: column;

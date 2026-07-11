@@ -70,7 +70,20 @@ export function AuthProvider({ children }) {
 
   async function enrollTotp(secret, code, displayName = 'Authenticator app') {
     const assertion = TotpMultiFactorGenerator.assertionForEnrollment(secret, code);
-    return multiFactor(currentUser).enroll(assertion, displayName);
+    await multiFactor(currentUser).enroll(assertion, displayName);
+    await currentUser.reload();
+    setCurrentUser(auth.currentUser);
+  }
+
+  function getTotpFactors() {
+    if (!currentUser) return [];
+    return multiFactor(currentUser).enrolledFactors.filter((factor) => factor.factorId === 'totp');
+  }
+
+  async function unenrollTotp(factorUid) {
+    await multiFactor(currentUser).unenroll(factorUid);
+    await currentUser.reload();
+    setCurrentUser(auth.currentUser);
   }
 
   async function logout() {
@@ -89,6 +102,8 @@ export function AuthProvider({ children }) {
     resolveTotpSignIn,
     startTotpEnrollment,
     enrollTotp,
+    getTotpFactors,
+    unenrollTotp,
     logout,
   };
 

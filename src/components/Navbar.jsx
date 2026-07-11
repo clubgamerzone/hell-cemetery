@@ -18,7 +18,7 @@ export default function Navbar() {
   const { currentUser, isAdmin, loading, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const visibleNavLinks = isAdmin
-    ? [...navLinks, { to: '/game-data', label: 'Game Data' }, { to: '/admin/security', label: 'Security' }]
+    ? [...navLinks, { to: '/game-data', label: 'Game Data' }]
     : navLinks;
 
   async function handleLogout() {
