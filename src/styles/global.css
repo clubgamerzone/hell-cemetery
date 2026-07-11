@@ -1,0 +1,201 @@
+/* Hell Cemetery — Global Gothic Theme */
+
+:root {
+  --color-bg-dark: #0a0808;
+  --color-bg-panel: #141010;
+  --color-bg-card: #1a1414;
+  --color-bg-elevated: #221818;
+  --color-border: #3d2020;
+  --color-border-glow: #6b1a1a;
+  --color-red: #8b0000;
+  --color-red-bright: #c41e3a;
+  --color-red-glow: rgba(196, 30, 58, 0.4);
+  --color-purple: #4a1942;
+  --color-purple-bright: #7b2d6e;
+  --color-purple-glow: rgba(123, 45, 110, 0.35);
+  --color-gray: #8a7a7a;
+  --color-gray-light: #b8a8a8;
+  --color-text: #e8dcd8;
+  --color-text-muted: #9a8888;
+  --color-gold: #c9a227;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-glow: 0 0 20px var(--color-red-glow);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+  --transition: 0.25s ease;
+  --navbar-height: 72px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg-dark);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(74, 25, 66, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(139, 0, 0, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #0a0808 0%, #120a0a 50%, #0a0808 100%);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
+h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+h3 { font-size: clamp(1.15rem, 2vw, 1.5rem); }
+
+a {
+  color: var(--color-red-bright);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--color-gold);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: var(--font-display);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.page {
+  flex: 1;
+  padding: calc(var(--navbar-height) + 2rem) 1.5rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeIn 0.5s ease;
+}
+
+.page--wide {
+  max-width: 1400px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.page-header h1 {
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-red-bright) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-gold);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid--enemies,
+.grid--items {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 1.2rem;
+}
+
+.notice {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(74, 25, 66, 0.15);
+  color: var(--color-gray-light);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.notice--warning {
+  border-color: var(--color-gold);
+  background: rgba(201, 162, 39, 0.08);
+  color: var(--color-gold);
+}
+
+.notice--info {
+  border-color: var(--color-purple-bright);
+  background: rgba(123, 45, 110, 0.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+
+  .page {
+    padding: calc(var(--navbar-height) + 1.5rem) 1rem 2rem;
+  }
+}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" fill="#0a0808"/>
+  <rect width="800" height="450" fill="url(#fog)" opacity="0.5"/>
+  <ellipse cx="400" cy="380" rx="350" ry="80" fill="#1a0a0a" opacity="0.8"/>
+  <!-- Castle silhouette -->
+  <path d="M280 320 L280 180 L320 180 L320 140 L360 140 L360 180 L400 180 L400 100 L440 100 L440 180 L480 180 L480 140 L520 140 L520 180 L560 180 L560 320 Z" fill="#141010" stroke="#3d2020" stroke-width="2"/>
+  <!-- Moon -->
+  <circle cx="650" cy="80" r="40" fill="#2a1820" stroke="#6b1a1a" stroke-width="2"/>
+  <circle cx="665" cy="75" r="35" fill="#0a0808"/>
+  <!-- Crosses -->
+  <g fill="#1a1414" stroke="#3d2020" stroke-width="1">
+    <rect x="120" y="280" width="4" height="40"/><rect x="110" y="290" width="24" height="4"/>
+    <rect x="680" y="300" width="4" height="35"/><rect x="672" y="308" width="20" height="4"/>
+  </g>
+  <text x="400" y="420" text-anchor="middle" font-family="serif" font-size="14" fill="#6b4040" letter-spacing="4">HERO PLACEHOLDER</text>
+  <defs>
+    <radialGradient id="fog" cx="50%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#4a1942" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0a0808" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

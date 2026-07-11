@@ -1,0 +1,95 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.header h1 {
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+}
+
+.accountCard {
+  margin-bottom: 2rem;
+}
+
+.characterSection {
+  margin-bottom: 2rem;
+}
+
+.kvList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.kvItem {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kvItem:last-child {
+  border-bottom: none;
+}
+
+.kvItem dt {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gray);
+}
+
+.kvItem dd {
+  color: var(--color-gray-light);
+  word-break: break-all;
+}
+
+.uid {
+  font-family: 'Consolas', monospace;
+  font-size: 0.85rem;
+  color: var(--color-purple-bright) !important;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.noData {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.pathHint {
+  font-size: 0.85rem;
+  color: var(--color-gray);
+  margin-bottom: 0.75rem;
+}
+
+.pathHint code {
+  font-family: 'Consolas', monospace;
+  color: var(--color-purple-bright);
+  background: var(--color-bg-dark);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .kvItem {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

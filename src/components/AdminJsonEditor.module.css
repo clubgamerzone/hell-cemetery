@@ -1,0 +1,75 @@
+.editor {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: rgba(10, 8, 8, 0.35);
+  overflow: hidden;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: none;
+  background: var(--color-bg-elevated);
+  color: var(--color-gold);
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.body {
+  padding: 1rem;
+}
+
+.path {
+  margin-bottom: 0.75rem;
+  color: var(--color-text-muted);
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 340px;
+  resize: vertical;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  font-family: Consolas, Monaco, monospace;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  padding: 0.85rem;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-red-bright);
+  box-shadow: 0 0 0 2px var(--color-red-glow);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.error,
+.message {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #f0a0a0;
+}
+
+.message {
+  color: #8fd98f;
+}

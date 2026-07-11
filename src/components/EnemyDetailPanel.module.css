@@ -1,0 +1,243 @@
+.panel {
+  min-height: 100%;
+  background:
+    linear-gradient(180deg, rgba(34, 24, 18, 0.95) 0%, rgba(20, 14, 12, 0.98) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.empty {
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--color-bg-card);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.header {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(42, 24, 20, 0.5) 0%, transparent 100%);
+}
+
+.portraitFrame {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  padding: 6px;
+  border: 2px solid var(--color-red);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(135deg, rgba(139, 0, 0, 0.25) 0%, rgba(74, 25, 66, 0.2) 100%);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.titleBlock {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--color-gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.type {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-red-bright);
+}
+
+.subtype {
+  margin-top: 0.3rem;
+  color: var(--color-gray-light);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 1.5rem;
+}
+
+.section {
+  background: rgba(10, 8, 8, 0.35);
+  border: 1px solid rgba(61, 32, 32, 0.8);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.section:nth-child(4),
+.section:nth-child(5),
+.debugSection {
+  grid-column: 1 / -1;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.statsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(61, 32, 32, 0.5);
+}
+
+.statRow:last-child {
+  border-bottom: none;
+}
+
+.statLabel {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gray);
+}
+
+.statValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.resistances {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.resistanceRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.resistanceName {
+  color: var(--color-gray-light);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.resistanceValue {
+  color: var(--color-text-muted);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.92rem;
+}
+
+.lootList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.lootItem {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.lootName {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+}
+
+.lootMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.lootTag {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  background: rgba(74, 25, 66, 0.35);
+  border: 1px solid var(--color-purple);
+  color: var(--color-gray-light);
+}
+
+.lore {
+  color: var(--color-gray-light);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.debugSection {
+  opacity: 0.85;
+}
+
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .titleBlock {
+    width: 100%;
+  }
+}

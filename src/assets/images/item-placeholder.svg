@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" fill="#141010"/>
+  <rect x="20" y="20" width="160" height="160" rx="4" fill="#1a1414" stroke="#4a1942" stroke-width="1"/>
+  <!-- Sword icon -->
+  <rect x="96" y="50" width="8" height="80" rx="2" fill="#3d2020" stroke="#7b2d6e" stroke-width="1"/>
+  <rect x="80" y="125" width="40" height="8" rx="2" fill="#4a1942"/>
+  <rect x="92" y="133" width="16" height="20" rx="2" fill="#221818" stroke="#3d2020" stroke-width="1"/>
+  <polygon points="100,45 108,55 92,55" fill="#c9a227"/>
+  <text x="100" y="175" text-anchor="middle" font-family="serif" font-size="9" fill="#6b4040" letter-spacing="2">ITEM</text>
+</svg>
