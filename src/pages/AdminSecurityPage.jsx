@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import QRCode from 'qrcode';
 import { useAuth } from '../context/AuthContext';
 import GothicCard from '../components/GothicCard';
 import GothicButton from '../components/GothicButton';
@@ -23,6 +24,7 @@ function getSetupErrorMessage(error) {
 export default function AdminSecurityPage() {
   const { currentUser, isAdmin, loading, startTotpEnrollment, enrollTotp } = useAuth();
   const [setup, setSetup] = useState(null);
+  const [qrImageUrl, setQrImageUrl] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -41,7 +43,13 @@ export default function AdminSecurityPage() {
     setError('');
     setSuccess('');
     try {
-      setSetup(await startTotpEnrollment(currentUser.email || currentUser.uid));
+      const enrollmentSetup = await startTotpEnrollment(currentUser.email || currentUser.uid);
+      setSetup(enrollmentSetup);
+      setQrImageUrl(await QRCode.toDataURL(enrollmentSetup.qrCodeUrl, {
+        errorCorrectionLevel: 'M',
+        margin: 2,
+        width: 220,
+      }));
     } catch (err) {
       setError(getSetupErrorMessage(err));
     } finally {
@@ -60,6 +68,7 @@ export default function AdminSecurityPage() {
       await enrollTotp(setup.secret, code.trim());
       setSuccess('Two-factor authentication is now enabled for this account.');
       setSetup(null);
+      setQrImageUrl('');
       setCode('');
     } catch (err) {
       setError(getSetupErrorMessage(err));
@@ -86,11 +95,16 @@ export default function AdminSecurityPage() {
             </GothicButton>
           ) : (
             <form onSubmit={handleEnroll} className={styles.form}>
-              <img
-                src={setup.qrCodeUrl}
-                alt="Two-factor authentication QR code"
-                className={styles.qrCode}
-              />
+              {qrImageUrl && (
+                <img
+                  src={qrImageUrl}
+                  alt="Two-factor authentication QR code"
+                  className={styles.qrCode}
+                />
+              )}
+              <p className={styles.manualSecret}>
+                Manual key: <code>{setup.secret.secretKey}</code>
+              </p>
               <div className={styles.form__group}>
                 <label htmlFor="totp-code">Authenticator Code</label>
                 <input

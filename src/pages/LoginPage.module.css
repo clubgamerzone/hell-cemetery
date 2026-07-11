@@ -56,6 +56,18 @@
   background: #fff;
 }
 
+.manualSecret {
+  margin-bottom: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.manualSecret code {
+  color: var(--color-gold);
+  font-family: Consolas, Monaco, monospace;
+}
+
 .form {
   display: flex;
   flex-direction: column;

@@ -25,7 +25,7 @@ function getAuthErrorMessage(error) {
     case 'auth/popup-closed-by-user':
       return 'Sign-in was cancelled before it finished.';
     case 'auth/operation-not-allowed':
-      return 'This sign-in provider is not enabled in Firebase yet.';
+      return 'This sign-in method is not enabled in Firebase yet.';
     case 'auth/unauthorized-domain':
       return 'This domain is not authorized in Firebase Authentication settings.';
     case 'auth/account-exists-with-different-credential':
@@ -142,7 +142,11 @@ export default function LoginPage() {
       await resolveTotpSignIn(mfaResolver, mfaFactorUid, mfaCode.trim());
       navigate(from, { replace: true });
     } catch (err) {
-      setError(getAuthErrorMessage(err));
+      if (err?.code === 'auth/operation-not-allowed') {
+        setError('TOTP two-factor authentication is not enabled in Firebase for this project yet.');
+      } else {
+        setError(getAuthErrorMessage(err));
+      }
     } finally {
       setLoading(false);
     }
