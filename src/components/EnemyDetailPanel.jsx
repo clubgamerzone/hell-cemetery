@@ -1,6 +1,8 @@
 import enemyPlaceholder from '../assets/images/enemy-placeholder.svg';
+import { useState } from 'react';
 import CollapsibleJson from './CollapsibleJson';
 import AdminJsonEditor from './AdminJsonEditor';
+import EnemyAdminEditor from './EnemyAdminEditor';
 import { formatStatValue, formatDropChance } from '../utils/enemyParser';
 import styles from './EnemyDetailPanel.module.css';
 
@@ -56,6 +58,19 @@ function getDropArrays(enemyData) {
   ].filter(Array.isArray);
 }
 
+function SectionHeader({ title, editable, onEdit }) {
+  return (
+    <div className={styles.sectionHeader}>
+      <h3 className={styles.sectionTitle}>{title}</h3>
+      {editable && (
+        <button type="button" className={styles.editButton} onClick={onEdit}>
+          Edit
+        </button>
+      )}
+    </div>
+  );
+}
+
 function validateEnemyLoot(enemyData, items) {
   const itemKeys = new Set(
     items.flatMap((item) => [
@@ -86,6 +101,8 @@ function validateEnemyLoot(enemyData, items) {
 }
 
 export default function EnemyDetailPanel({ enemy, showDebug = false, items = [], onSaved }) {
+  const [editorSection, setEditorSection] = useState('');
+
   if (!enemy) {
     return (
       <div className={styles.empty}>
@@ -99,7 +116,13 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
   return (
     <article className={styles.panel}>
       <div className={styles.header}>
-        <div className={styles.portraitFrame}>
+        <button
+          type="button"
+          className={`${styles.portraitFrame} ${showDebug ? styles.portraitFrameEditable : ''}`}
+          onClick={showDebug ? () => setEditorSection('portrait') : undefined}
+          disabled={!showDebug}
+          aria-label={showDebug ? 'Edit enemy portrait' : undefined}
+        >
           <img
             src={enemy.imageUrl || enemyPlaceholder}
             alt={enemy.name}
@@ -108,7 +131,8 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
               e.currentTarget.src = enemyPlaceholder;
             }}
           />
-        </div>
+          {showDebug && <span className={styles.portraitEdit}>Edit</span>}
+        </button>
 
         <div className={styles.titleBlock}>
           <h2 className={styles.name}>{enemy.name}</h2>
@@ -118,12 +142,28 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
               {[enemy.enemyFamily, enemy.attackElement].filter(Boolean).join(' / ')}
             </p>
           )}
+          {showDebug && (
+            <button type="button" className={styles.inlineEditButton} onClick={() => setEditorSection('identity')}>
+              Edit details
+            </button>
+          )}
         </div>
       </div>
 
       <div className={styles.body}>
+        {showDebug && (
+          <EnemyAdminEditor
+            enemy={enemy}
+            items={items}
+            openSection={editorSection}
+            onClose={() => setEditorSection('')}
+            onSaved={onSaved}
+            validate={(nextValue) => validateEnemyLoot(nextValue, items)}
+          />
+        )}
+
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Stats</h3>
+          <SectionHeader title="Stats" editable={showDebug} onEdit={() => setEditorSection('stats')} />
           <div className={styles.statsGrid}>
             {CORE_STATS.map(({ key, label }) => (
               <StatRow key={key} label={label} value={enemy.stats[key]} />
@@ -132,7 +172,7 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
         </section>
 
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Resistances</h3>
+          <SectionHeader title="Resistances" editable={showDebug} onEdit={() => setEditorSection('resistances')} />
           {enemy.resistances.length > 0 ? (
             <div className={styles.resistances}>
               {enemy.resistances.map((res) => (
@@ -148,7 +188,7 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
         </section>
 
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Loot Drops</h3>
+          <SectionHeader title="Loot Drops" editable={showDebug} onEdit={() => setEditorSection('loot')} />
           {enemy.lootDrops.length > 0 ? (
             <ul className={styles.lootList}>
               {enemy.lootDrops.map((drop) => (
@@ -161,14 +201,14 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
         </section>
 
         <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Lore</h3>
+          <SectionHeader title="Lore" editable={showDebug} onEdit={() => setEditorSection('lore')} />
           <p className={styles.lore}>{enemy.description}</p>
         </section>
 
         {showDebug && (
           <section className={styles.debugSection}>
             <AdminJsonEditor
-              title="Admin Enemy Editor"
+              title="Advanced JSON Editor"
               path={enemy.writePath}
               value={enemy.raw}
               validate={(nextValue) => validateEnemyLoot(nextValue, items)}
