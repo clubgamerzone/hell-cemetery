@@ -88,6 +88,32 @@
   color: var(--color-gold);
 }
 
+.card__titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.card__editButton {
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-gold);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.card__editButton:hover {
+  border-color: var(--color-red-bright);
+  color: var(--color-red-bright);
+}
+
 .card__type {
   display: inline-block;
   font-family: var(--font-display);

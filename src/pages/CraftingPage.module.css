@@ -31,6 +31,12 @@
   gap: 1rem;
 }
 
+.recipeActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .recipeTitle {
   font-family: var(--font-display);
   color: var(--color-gold);
@@ -51,6 +57,24 @@
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.editButton {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-gold);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.editButton:hover {
+  border-color: var(--color-red-bright);
+  color: var(--color-red-bright);
 }
 
 .enabled {

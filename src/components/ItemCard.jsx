@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import itemPlaceholder from '../assets/images/item-placeholder.svg';
 import AdminJsonEditor from './AdminJsonEditor';
+import ItemAdminEditor from './ItemAdminEditor';
 import styles from './ItemCard.module.css';
 
 function formatValue(value) {
@@ -19,6 +21,7 @@ function getRarityClass(rarity) {
 }
 
 export default function ItemCard({ item, showDebug = false, onSaved }) {
+  const [isEditing, setIsEditing] = useState(false);
   const name = item.itemName || item.id || 'Unknown Item';
   const description = item.description;
   const type = item.typeLabel;
@@ -44,7 +47,18 @@ export default function ItemCard({ item, showDebug = false, onSaved }) {
         )}
       </div>
       <div className={styles.card__body}>
-        <h3 className={styles.card__name}>{name}</h3>
+        <div className={styles.card__titleRow}>
+          <h3 className={styles.card__name}>{name}</h3>
+          {showDebug && (
+            <button
+              type="button"
+              className={styles.card__editButton}
+              onClick={() => setIsEditing((current) => !current)}
+            >
+              {isEditing ? 'Close' : 'Edit'}
+            </button>
+          )}
+        </div>
         {type && <span className={styles.card__type}>{type}</span>}
         <p className={styles.card__description}>{description}</p>
 
@@ -97,13 +111,20 @@ export default function ItemCard({ item, showDebug = false, onSaved }) {
           </ul>
         )}
 
-        {showDebug && (
-          <AdminJsonEditor
-            title="Admin Item Editor"
-            path={item.writePath}
-            value={item.raw}
-            onSaved={onSaved}
-          />
+        {showDebug && isEditing && (
+          <>
+            <ItemAdminEditor
+              item={item}
+              onClose={() => setIsEditing(false)}
+              onSaved={onSaved}
+            />
+            <AdminJsonEditor
+              title="Advanced Item JSON"
+              path={item.writePath}
+              value={item.raw}
+              onSaved={onSaved}
+            />
+          </>
         )}
       </div>
     </article>

@@ -9,10 +9,12 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import CollapsibleJson from '../components/CollapsibleJson';
 import AdminJsonEditor from '../components/AdminJsonEditor';
+import CraftingRecipeAdminEditor from '../components/CraftingRecipeAdminEditor';
 import { useAuth } from '../context/AuthContext';
 import styles from './CraftingPage.module.css';
 
 function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
+  const [isEditing, setIsEditing] = useState(false);
   const output = recipe.output;
   const itemKeys = new Set(
     items.flatMap((item) => [item.firebaseKey, item.itemId, item.itemName].filter(Boolean).map(String)),
@@ -41,9 +43,20 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
           <h3 className={styles.recipeTitle}>{recipe.displayName}</h3>
           {showDebug && <p className={styles.recipeId}>{recipe.recipeId}</p>}
         </div>
-        <span className={`${styles.status} ${recipe.enabled ? styles.enabled : styles.disabled}`}>
-          {recipe.enabled ? 'Enabled' : 'Disabled'}
-        </span>
+        <div className={styles.recipeActions}>
+          <span className={`${styles.status} ${recipe.enabled ? styles.enabled : styles.disabled}`}>
+            {recipe.enabled ? 'Enabled' : 'Disabled'}
+          </span>
+          {showDebug && (
+            <button
+              type="button"
+              className={styles.editButton}
+              onClick={() => setIsEditing((current) => !current)}
+            >
+              {isEditing ? 'Close' : 'Edit'}
+            </button>
+          )}
+        </div>
       </div>
 
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
@@ -68,10 +81,16 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
         <p className={styles.empty}>No ingredients listed.</p>
       )}
 
-      {showDebug && (
+      {showDebug && isEditing && (
         <>
+          <CraftingRecipeAdminEditor
+            recipe={recipe}
+            items={items}
+            validate={validateRecipe}
+            onSaved={onSaved}
+          />
           <AdminJsonEditor
-            title="Admin Recipe Editor"
+            title="Advanced Recipe JSON"
             path={recipe.writePath}
             value={recipe.raw}
             validate={validateRecipe}
