@@ -101,7 +101,7 @@ function getImageUrl(draft, fallback) {
   return draft.imageUrl || draft.image || fallback || itemPlaceholder;
 }
 
-export default function ItemAdminEditor({ item, onClose, onSaved }) {
+export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader = false }) {
   const fileInputRef = useRef(null);
   const [draft, setDraft] = useState(() => clone(item.raw));
   const [saving, setSaving] = useState(false);
@@ -154,10 +154,12 @@ export default function ItemAdminEditor({ item, onClose, onSaved }) {
 
   return (
     <section className={styles.editor}>
-      <div className={styles.header}>
-        <h3>Edit Item</h3>
-        <button type="button" className={styles.closeButton} onClick={onClose}>Close</button>
-      </div>
+      {!compactHeader && (
+        <div className={styles.header}>
+          <h3>Edit Item</h3>
+          <button type="button" className={styles.closeButton} onClick={onClose}>Close</button>
+        </div>
+      )}
 
       <div className={styles.grid}>
         <div className={styles.imageEditor}>
