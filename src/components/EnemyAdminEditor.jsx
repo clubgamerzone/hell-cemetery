@@ -41,15 +41,26 @@ const RESISTANCE_FIELDS = [
 ];
 
 const DROP_KEYS = [
-  'lootDrops',
-  'drops',
   'commonDrops',
   'normalDrops',
   'uncommonDrops',
   'rareDrops',
   'veryRareDrops',
   'legendaryDrops',
+  'lootDrops',
+  'drops',
 ];
+
+const DROP_LIST_LABELS = {
+  commonDrops: 'Common drops',
+  normalDrops: 'Normal drops',
+  uncommonDrops: 'Uncommon drops',
+  rareDrops: 'Rare drops',
+  veryRareDrops: 'Very rare drops',
+  legendaryDrops: 'Legendary drops',
+  lootDrops: 'Legacy loot drops',
+  drops: 'Legacy drops',
+};
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value ?? {}));
@@ -69,36 +80,91 @@ function getDropKey(data) {
   return DROP_KEYS.find((key) => Array.isArray(data[key])) || 'lootDrops';
 }
 
-function normalizeDrops(data) {
-  const key = getDropKey(data);
-  const drops = Array.isArray(data[key]) ? data[key] : [];
-  return drops.map((drop) => {
-    if (typeof drop !== 'object' || drop === null) {
-      return {
-        itemKey: String(drop),
-        itemName: String(drop),
-        itemID: '',
-        dropChance: '',
-        minAmount: '',
-        maxAmount: '',
-        dropTier: '',
-        isGuaranteed: false,
-      };
-    }
+function getItemAliases(item) {
+  return [
+    item.itemName,
+    item.itemId,
+    item.firebaseKey,
+    item.id,
+  ].filter(Boolean).map(String);
+}
 
-    const itemKey = drop.itemID ?? drop.itemId ?? drop.itemName ?? drop.name ?? '';
+function findItemOption(itemOptions, value) {
+  if (value === '' || value === null || value === undefined) return null;
+  const text = String(value);
+  return itemOptions.find((option) => option.aliases.includes(text)) || null;
+}
+
+function resolveDropItemKey(drop, itemOptions) {
+  const candidates = [
+    drop?.itemName,
+    drop?.itemID,
+    drop?.itemId,
+    drop?.name,
+    drop,
+  ];
+  const matched = candidates.map((candidate) => findItemOption(itemOptions, candidate)).find(Boolean);
+  if (matched) return matched.key;
+  return String(candidates.find((candidate) => candidate !== undefined && candidate !== null && candidate !== '') || '');
+}
+
+function normalizeDrop(drop, sourceKey, itemOptions) {
+  if (typeof drop !== 'object' || drop === null) {
     return {
-      ...drop,
-      itemKey: String(itemKey),
-      itemName: drop.itemName || drop.name || String(itemKey),
-      itemID: drop.itemID ?? drop.itemId ?? '',
-      dropChance: drop.dropChance ?? drop.chance ?? '',
-      minAmount: drop.minAmount ?? '',
-      maxAmount: drop.maxAmount ?? '',
-      dropTier: drop.dropTier || drop.tier || '',
-      isGuaranteed: Boolean(drop.isGuaranteed),
+      sourceKey,
+      itemKey: resolveDropItemKey(drop, itemOptions),
+      itemName: String(drop),
+      itemID: '',
+      dropChance: '',
+      minAmount: '',
+      maxAmount: '',
+      dropTier: '',
+      isGuaranteed: false,
     };
+  }
+
+  return {
+    ...drop,
+    sourceKey,
+    itemKey: resolveDropItemKey(drop, itemOptions),
+    itemName: drop.itemName || drop.name || '',
+    itemID: drop.itemID ?? drop.itemId ?? '',
+    dropChance: drop.dropChance ?? drop.chance ?? '',
+    minAmount: drop.minAmount ?? '',
+    maxAmount: drop.maxAmount ?? '',
+    dropTier: drop.dropTier || drop.tier || '',
+    isGuaranteed: Boolean(drop.isGuaranteed),
+  };
+}
+
+function normalizeDrops(data, itemOptions = []) {
+  const drops = DROP_KEYS.flatMap((key) => {
+    const list = Array.isArray(data[key]) ? data[key] : [];
+    return list.map((drop) => normalizeDrop(drop, key, itemOptions));
   });
+
+  if (drops.length > 0) return drops;
+
+  const key = getDropKey(data);
+  return (Array.isArray(data[key]) ? data[key] : []).map((drop) => normalizeDrop(drop, key, itemOptions));
+}
+
+function buildDropSaveData(drop) {
+  return {
+    itemID: toNumberOrBlank(drop.itemID),
+    itemName: drop.itemName,
+    dropChance: toNumberOrBlank(drop.dropChance),
+    minAmount: toNumberOrBlank(drop.minAmount),
+    maxAmount: toNumberOrBlank(drop.maxAmount),
+    dropTier: drop.dropTier,
+    isGuaranteed: Boolean(drop.isGuaranteed),
+  };
+}
+
+function getUsedDropKeys(data, drops) {
+  const existingKeys = DROP_KEYS.filter((key) => Array.isArray(data[key]));
+  const editedKeys = drops.map((drop) => drop.sourceKey).filter(Boolean);
+  return Array.from(new Set([...existingKeys, ...editedKeys]));
 }
 
 function toNumberOrBlank(value) {
@@ -136,16 +202,17 @@ export default function EnemyAdminEditor({
 }) {
   const fileInputRef = useRef(null);
   const [draft, setDraft] = useState(() => clone(enemy.raw));
-  const [drops, setDrops] = useState(() => normalizeDrops(enemy.raw));
+  const [drops, setDrops] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
   const itemOptions = useMemo(
     () => items.map((item) => ({
-      key: String(item.itemId || item.firebaseKey || item.itemName),
+      key: String(item.itemName || item.itemId || item.firebaseKey),
       label: item.itemName,
       item,
+      aliases: getItemAliases(item),
     })),
     [items],
   );
@@ -176,10 +243,10 @@ export default function EnemyAdminEditor({
 
   useEffect(() => {
     setDraft(clone(enemy.raw));
-    setDrops(normalizeDrops(enemy.raw));
+    setDrops(normalizeDrops(enemy.raw, itemOptions));
     setError('');
     setMessage('');
-  }, [enemy]);
+  }, [enemy, itemOptions]);
 
   function setField(key, value) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -212,9 +279,11 @@ export default function EnemyAdminEditor({
 
   function addDrop() {
     const firstItem = itemOptions[0];
+    const defaultSourceKey = getDropKey(draft);
     setDrops((current) => [
       ...current,
       {
+        sourceKey: defaultSourceKey,
         itemKey: firstItem?.key || '',
         itemID: firstItem?.item.itemId || firstItem?.item.firebaseKey || '',
         itemName: firstItem?.item.itemName || '',
@@ -249,16 +318,14 @@ export default function EnemyAdminEditor({
       return next;
     }
 
-    const dropKey = getDropKey(next);
-    next[dropKey] = drops.map(({ itemKey, itemID, itemName, dropChance, minAmount, maxAmount, dropTier, isGuaranteed }) => ({
-      itemID,
-      itemName,
-      dropChance: toNumberOrBlank(dropChance),
-      minAmount: toNumberOrBlank(minAmount),
-      maxAmount: toNumberOrBlank(maxAmount),
-      dropTier,
-      isGuaranteed: Boolean(isGuaranteed),
-    }));
+    getUsedDropKeys(next, drops).forEach((key) => {
+      next[key] = [];
+    });
+
+    drops.forEach((drop) => {
+      const key = drop.sourceKey || getDropKey(next);
+      next[key] = [...(Array.isArray(next[key]) ? next[key] : []), buildDropSaveData(drop)];
+    });
     return next;
   }
 
@@ -561,6 +628,17 @@ export default function EnemyAdminEditor({
             <div className={styles.dropList}>
               {drops.map((drop, index) => (
                 <div key={`${drop.itemKey}-${index}`} className={styles.dropRow}>
+                  <label className={styles.field}>
+                    <span>Drop list</span>
+                    <select
+                      value={drop.sourceKey || getDropKey(draft)}
+                      onChange={(event) => setDrop(index, { sourceKey: event.target.value })}
+                    >
+                      {DROP_KEYS.map((key) => (
+                        <option key={key} value={key}>{DROP_LIST_LABELS[key]}</option>
+                      ))}
+                    </select>
+                  </label>
                   <label className={styles.field}>
                     <span>Item</span>
                     <select
