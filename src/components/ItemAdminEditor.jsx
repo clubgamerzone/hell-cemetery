@@ -214,7 +214,7 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
             value={draft.rarity ?? ''}
             onChange={(event) => setField('rarity', toNumberOrBlank(event.target.value))}
           >
-            <option value="">Common</option>
+            <option value="">Use default</option>
             {RARITIES.map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
