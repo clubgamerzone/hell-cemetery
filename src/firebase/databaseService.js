@@ -28,6 +28,13 @@ export async function saveContentNode(path, data) {
   await set(ref(database, path), data);
 }
 
+export async function deleteContentNode(path) {
+  if (!path || typeof path !== 'string') {
+    throw new Error('A valid Firebase path is required.');
+  }
+  await set(ref(database, path), null);
+}
+
 function sortChunkEntries(chunks) {
   return Object.entries(chunks || {}).sort(([leftKey], [rightKey]) => {
     const leftIndex = Number(String(leftKey).replace('chunk_', ''));

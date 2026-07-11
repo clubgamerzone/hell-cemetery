@@ -110,6 +110,10 @@
   grid-row: span 3;
 }
 
+.imageEditor.full {
+  grid-row: auto;
+}
+
 .imageButton {
   position: relative;
   width: 160px;

@@ -100,7 +100,7 @@ function validateEnemyLoot(enemyData, items) {
   return '';
 }
 
-export default function EnemyDetailPanel({ enemy, showDebug = false, items = [], onSaved }) {
+export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = false, items = [], onSaved }) {
   const [editorSection, setEditorSection] = useState('');
 
   if (!enemy) {
@@ -154,6 +154,7 @@ export default function EnemyDetailPanel({ enemy, showDebug = false, items = [],
         {showDebug && (
           <EnemyAdminEditor
             enemy={enemy}
+            enemies={enemies}
             items={items}
             openSection={editorSection}
             onClose={() => setEditorSection('')}

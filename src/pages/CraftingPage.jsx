@@ -138,6 +138,8 @@ export default function CraftingPage() {
     return recipes.filter((recipe) =>
       recipe.displayName.toLowerCase().includes(query) ||
       recipe.recipeId.toLowerCase().includes(query) ||
+      String(recipe.raw?.category || recipe.raw?.recipeCategory || recipe.raw?.type || '').toLowerCase().includes(query) ||
+      String(recipe.output?.itemName || recipe.output?.itemId || '').toLowerCase().includes(query) ||
       recipe.ingredients.some((ingredient) =>
         String(ingredient.itemName || ingredient.itemId || '').toLowerCase().includes(query),
       ),

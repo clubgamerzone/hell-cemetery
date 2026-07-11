@@ -20,7 +20,10 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
         enemies: group.enemies.filter(
           (enemy) =>
             enemy.name.toLowerCase().includes(query) ||
-            enemy.categoryLabel.toLowerCase().includes(query),
+            enemy.categoryLabel.toLowerCase().includes(query) ||
+            String(enemy.category || '').toLowerCase().includes(query) ||
+            String(enemy.enemyFamily || '').toLowerCase().includes(query) ||
+            String(enemy.attackElement || '').toLowerCase().includes(query),
         ),
       }))
       .filter((group) => group.enemies.length > 0);
@@ -75,6 +78,7 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
       <div className={styles.detail}>
         <EnemyDetailPanel
           enemy={selectedEnemy}
+          enemies={enemies}
           showDebug={showDebug}
           items={items}
           onSaved={onSaved}

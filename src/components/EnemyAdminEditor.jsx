@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import GothicButton from './GothicButton';
-import { saveContentNode } from '../firebase/databaseService';
+import { deleteContentNode, saveContentNode } from '../firebase/databaseService';
 import styles from './EnemyAdminEditor.module.css';
 
 const STAT_FIELDS = {
@@ -94,8 +94,21 @@ function stripDataUri(dataUrl) {
   return { base64, mimeType };
 }
 
+function getCategoryMovePath(enemy, category) {
+  const nextCategory = String(category || '').trim();
+  if (!nextCategory || /[.#$\[\]/]/.test(nextCategory)) return null;
+
+  const match = enemy.writePath.match(/^EnemySettings\/Categories\/([^/]+)\/([^/]+)(\/enemyStats)?$/);
+  if (!match) return null;
+
+  const [, currentCategory, enemyKey, suffix = ''] = match;
+  if (currentCategory === nextCategory) return null;
+  return `EnemySettings/Categories/${nextCategory}/${enemyKey}${suffix}`;
+}
+
 export default function EnemyAdminEditor({
   enemy,
+  enemies = [],
   items,
   openSection,
   onClose,
@@ -117,6 +130,26 @@ export default function EnemyAdminEditor({
     })),
     [items],
   );
+
+  const enemyOptions = useMemo(() => {
+    const unique = (values) => Array.from(new Set(values.filter(Boolean).map(String))).sort();
+    return {
+      creatureTypes: unique(enemies.flatMap((entry) => [
+        entry.enemyFamily,
+        entry.raw?.enemyFamily,
+        entry.raw?.creatureType,
+        entry.raw?.type,
+      ])),
+      categories: unique(enemies.flatMap((entry) => [
+        entry.category,
+        entry.raw?.category,
+      ])),
+      attackElements: unique(enemies.flatMap((entry) => [
+        entry.attackElement,
+        entry.raw?.attackElement,
+      ])),
+    };
+  }, [enemies]);
 
   useEffect(() => {
     setDraft(clone(enemy.raw));
@@ -189,6 +222,10 @@ export default function EnemyAdminEditor({
 
   function buildSaveData() {
     const next = clone(draft);
+    if (openSection !== 'loot') {
+      return next;
+    }
+
     const dropKey = getDropKey(next);
     next[dropKey] = drops.map(({ itemKey, itemID, itemName, dropChance, minAmount, maxAmount, dropTier, isGuaranteed }) => ({
       itemID,
@@ -209,13 +246,24 @@ export default function EnemyAdminEditor({
 
     try {
       const next = buildSaveData();
-      const validationError = validate?.(next);
+      const validationError = openSection === 'loot' ? validate?.(next) : '';
       if (validationError) {
         setError(validationError);
         return;
       }
 
-      await saveContentNode(enemy.writePath, next);
+      const movePath = openSection === 'identity' ? getCategoryMovePath(enemy, next.category || enemy.category) : null;
+      if (openSection === 'identity' && (next.category || enemy.category) && /[.#$\[\]/]/.test(String(next.category || enemy.category))) {
+        setError('Category cannot contain ., #, $, [, ], or /.');
+        return;
+      }
+
+      if (movePath) {
+        await saveContentNode(movePath, next);
+        await deleteContentNode(enemy.writePath);
+      } else {
+        await saveContentNode(enemy.writePath, next);
+      }
       setMessage('Saved.');
       onSaved?.();
     } catch {
@@ -235,7 +283,34 @@ export default function EnemyAdminEditor({
       </div>
 
       <div className={styles.grid}>
-        {(openSection === 'identity' || openSection === 'portrait') && (
+        {openSection === 'portrait' && (
+          <div className={`${styles.imageEditor} ${styles.full}`}>
+            <button
+              type="button"
+              className={styles.imageButton}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <img
+                src={
+                  draft.encyclopediaPortraitBase64
+                    ? `data:${draft.encyclopediaPortraitMimeType || 'image/png'};base64,${draft.encyclopediaPortraitBase64}`
+                    : enemy.imageUrl
+                }
+                alt=""
+              />
+              <span>Edit image</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className={styles.fileInput}
+              onChange={handleImageChange}
+            />
+          </div>
+        )}
+
+        {openSection === 'identity' && (
           <>
             <div className={styles.imageEditor}>
               <button
@@ -272,23 +347,41 @@ export default function EnemyAdminEditor({
             <label className={styles.field}>
               <span>Creature type</span>
               <input
+                list="enemy-creature-types"
                 value={draft.enemyFamily || ''}
                 onChange={(event) => setField('enemyFamily', event.target.value)}
               />
+              <datalist id="enemy-creature-types">
+                {enemyOptions.creatureTypes.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
             </label>
             <label className={styles.field}>
               <span>Category</span>
               <input
+                list="enemy-categories"
                 value={draft.category || enemy.category || ''}
                 onChange={(event) => setField('category', event.target.value)}
               />
+              <datalist id="enemy-categories">
+                {enemyOptions.categories.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
             </label>
             <label className={styles.field}>
               <span>Attack element</span>
               <input
+                list="enemy-attack-elements"
                 value={draft.attackElement || ''}
                 onChange={(event) => setField('attackElement', event.target.value)}
               />
+              <datalist id="enemy-attack-elements">
+                {enemyOptions.attackElements.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
             </label>
             <label className={styles.checkbox}>
               <input
