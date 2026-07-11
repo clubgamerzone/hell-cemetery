@@ -243,6 +243,27 @@ button.portraitFrame:disabled {
 
 .resistanceValue {
   color: var(--color-text-muted);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.05rem 0.35rem;
+}
+
+.resistanceHigh {
+  color: #ff9b9b;
+  border-color: rgba(196, 30, 58, 0.55);
+  background: rgba(196, 30, 58, 0.16);
+}
+
+.resistanceWeak {
+  color: #8fd98f;
+  border-color: rgba(74, 138, 74, 0.6);
+  background: rgba(74, 138, 74, 0.16);
+}
+
+.resistanceNeutral {
+  color: var(--color-gray-light);
+  border-color: rgba(138, 122, 122, 0.35);
+  background: rgba(138, 122, 122, 0.08);
 }
 
 .muted {

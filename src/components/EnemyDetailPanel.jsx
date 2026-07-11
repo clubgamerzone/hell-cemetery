@@ -86,6 +86,14 @@ function behaviorLabel(value) {
     : labels[Number(value)] || String(value);
 }
 
+function getResistanceClass(value) {
+  const percent = Number(String(value).match(/-?\d+(\.\d+)?/)?.[0]);
+  if (Number.isNaN(percent)) return '';
+  if (percent < 100) return styles.resistanceHigh;
+  if (percent > 100) return styles.resistanceWeak;
+  return styles.resistanceNeutral;
+}
+
 function validateEnemyLoot(enemyData, items) {
   const itemKeys = new Set(
     items.flatMap((item) => [
@@ -184,26 +192,32 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
             {CORE_STATS.map(({ key, label }) => (
               <StatRow key={key} label={label} value={enemy.stats[key]} />
             ))}
-            <StatRow label="Knockback X" value={enemy.raw?.knockbackForceX} />
-            <StatRow label="Knockback Y" value={enemy.raw?.knockbackForceY} />
+            {showDebug && (
+              <>
+                <StatRow label="Knockback X" value={enemy.raw?.knockbackForceX} />
+                <StatRow label="Knockback Y" value={enemy.raw?.knockbackForceY} />
+              </>
+            )}
           </div>
         </section>
 
-        <section className={styles.section}>
-          <SectionHeader title="Respawn & Movement" editable={showDebug} onEdit={() => setEditorSection('behavior')} />
-          <div className={styles.statsGrid}>
-            <StatRow label="Should Respawn" value={yesNo(enemy.raw?.shouldRespawn)} />
-            <StatRow label="Override Respawn" value={yesNo(enemy.raw?.overrideRespawnSettings)} />
-            <StatRow label="Respawn Time" value={enemy.raw?.timeToRespawn} />
-            <StatRow label="Override Movement" value={yesNo(enemy.raw?.overrideMovementBehavior)} />
-            <StatRow label="Behavior" value={behaviorLabel(enemy.raw?.behaviorType ?? enemy.behavior?.behaviorType)} />
-            <StatRow label="Detection Radius" value={enemy.raw?.detectionRadius ?? enemy.behavior?.detectionRadius} />
-            <StatRow label="Pursuit Multiplier" value={enemy.raw?.pursuitMultiplier ?? enemy.behavior?.pursuitMultiplier} />
-            <StatRow label="Wait Time" value={enemy.raw?.timeToWait} />
-            <StatRow label="Reset Time" value={enemy.raw?.timeToReset} />
-            <StatRow label="React To Attack" value={yesNo(enemy.raw?.shouldReactToAttack)} />
-          </div>
-        </section>
+        {showDebug && (
+          <section className={styles.section}>
+            <SectionHeader title="Respawn & Movement" editable={showDebug} onEdit={() => setEditorSection('behavior')} />
+            <div className={styles.statsGrid}>
+              <StatRow label="Should Respawn" value={yesNo(enemy.raw?.shouldRespawn)} />
+              <StatRow label="Override Respawn" value={yesNo(enemy.raw?.overrideRespawnSettings)} />
+              <StatRow label="Respawn Time" value={enemy.raw?.timeToRespawn} />
+              <StatRow label="Override Movement" value={yesNo(enemy.raw?.overrideMovementBehavior)} />
+              <StatRow label="Behavior" value={behaviorLabel(enemy.raw?.behaviorType ?? enemy.behavior?.behaviorType)} />
+              <StatRow label="Detection Radius" value={enemy.raw?.detectionRadius ?? enemy.behavior?.detectionRadius} />
+              <StatRow label="Pursuit Multiplier" value={enemy.raw?.pursuitMultiplier ?? enemy.behavior?.pursuitMultiplier} />
+              <StatRow label="Wait Time" value={enemy.raw?.timeToWait} />
+              <StatRow label="Reset Time" value={enemy.raw?.timeToReset} />
+              <StatRow label="React To Attack" value={yesNo(enemy.raw?.shouldReactToAttack)} />
+            </div>
+          </section>
+        )}
 
         <section className={styles.section}>
           <SectionHeader title="Resistances" editable={showDebug} onEdit={() => setEditorSection('resistances')} />
@@ -212,7 +226,9 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
               {enemy.resistances.map((res) => (
                 <div key={res.name} className={styles.resistanceRow}>
                   <span className={styles.resistanceName}>{res.name}</span>
-                  <span className={styles.resistanceValue}>{res.value}</span>
+                  <span className={`${styles.resistanceValue} ${getResistanceClass(res.value)}`}>
+                    {res.value}
+                  </span>
                 </div>
               ))}
             </div>
