@@ -71,6 +71,21 @@ function SectionHeader({ title, editable, onEdit }) {
   );
 }
 
+function yesNo(value) {
+  return value ? 'Yes' : 'No';
+}
+
+function behaviorLabel(value) {
+  const labels = {
+    0: 'Static / Idle',
+    1: 'Follow / Walker',
+    2: 'Patrol',
+  };
+  return value === null || value === undefined || value === ''
+    ? 'Prefab default'
+    : labels[Number(value)] || String(value);
+}
+
 function validateEnemyLoot(enemyData, items) {
   const itemKeys = new Set(
     items.flatMap((item) => [
@@ -169,6 +184,24 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
             {CORE_STATS.map(({ key, label }) => (
               <StatRow key={key} label={label} value={enemy.stats[key]} />
             ))}
+            <StatRow label="Knockback X" value={enemy.raw?.knockbackForceX} />
+            <StatRow label="Knockback Y" value={enemy.raw?.knockbackForceY} />
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <SectionHeader title="Respawn & Movement" editable={showDebug} onEdit={() => setEditorSection('behavior')} />
+          <div className={styles.statsGrid}>
+            <StatRow label="Should Respawn" value={yesNo(enemy.raw?.shouldRespawn)} />
+            <StatRow label="Override Respawn" value={yesNo(enemy.raw?.overrideRespawnSettings)} />
+            <StatRow label="Respawn Time" value={enemy.raw?.timeToRespawn} />
+            <StatRow label="Override Movement" value={yesNo(enemy.raw?.overrideMovementBehavior)} />
+            <StatRow label="Behavior" value={behaviorLabel(enemy.raw?.behaviorType ?? enemy.behavior?.behaviorType)} />
+            <StatRow label="Detection Radius" value={enemy.raw?.detectionRadius ?? enemy.behavior?.detectionRadius} />
+            <StatRow label="Pursuit Multiplier" value={enemy.raw?.pursuitMultiplier ?? enemy.behavior?.pursuitMultiplier} />
+            <StatRow label="Wait Time" value={enemy.raw?.timeToWait} />
+            <StatRow label="Reset Time" value={enemy.raw?.timeToReset} />
+            <StatRow label="React To Attack" value={yesNo(enemy.raw?.shouldReactToAttack)} />
           </div>
         </section>
 
@@ -188,7 +221,7 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
           )}
         </section>
 
-        <section className={styles.section}>
+        <section className={`${styles.section} ${styles.fullSection}`}>
           <SectionHeader title="Loot Drops" editable={showDebug} onEdit={() => setEditorSection('loot')} />
           {enemy.lootDrops.length > 0 ? (
             <ul className={styles.lootList}>
@@ -201,7 +234,7 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
           )}
         </section>
 
-        <section className={styles.section}>
+        <section className={`${styles.section} ${styles.fullSection}`}>
           <SectionHeader title="Lore" editable={showDebug} onEdit={() => setEditorSection('lore')} />
           <p className={styles.lore}>{enemy.description}</p>
         </section>

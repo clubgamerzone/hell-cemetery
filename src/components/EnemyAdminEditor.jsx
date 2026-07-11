@@ -433,102 +433,108 @@ export default function EnemyAdminEditor({
           </>
         )}
 
-        {openSection === 'stats' && (
+        {(openSection === 'stats' || openSection === 'behavior') && (
           <div className={styles.full}>
-            <div className={styles.editorGroup}>
-              <h4>Combat Stats</h4>
-              <div className={styles.grid}>
-                {COMBAT_STAT_FIELDS.map(([fallback, label, keys]) => (
-                  <label key={fallback} className={styles.field}>
-                    <span>{label}</span>
-                    <input
-                      type="number"
-                      step="any"
-                      value={getNumber(draft, keys)}
-                      onChange={(event) => setNumberField(keys, event.target.value, fallback)}
-                    />
-                  </label>
-                ))}
+            {openSection === 'stats' && (
+              <div className={styles.editorGroup}>
+                <h4>Combat Stats</h4>
+                <div className={styles.grid}>
+                  {COMBAT_STAT_FIELDS.map(([fallback, label, keys]) => (
+                    <label key={fallback} className={styles.field}>
+                      <span>{label}</span>
+                      <input
+                        type="number"
+                        step="any"
+                        value={getNumber(draft, keys)}
+                        onChange={(event) => setNumberField(keys, event.target.value, fallback)}
+                      />
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className={styles.editorGroup}>
-              <h4>Respawn</h4>
-              <div className={styles.grid}>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(draft.shouldRespawn)}
-                    onChange={(event) => setField('shouldRespawn', event.target.checked)}
-                  />
-                  <span>Should respawn</span>
-                </label>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(draft.overrideRespawnSettings)}
-                    onChange={(event) => setField('overrideRespawnSettings', event.target.checked)}
-                  />
-                  <span>Override respawn settings</span>
-                </label>
-                {RESPAWN_FIELDS.map(([key, label]) => (
-                  <label key={key} className={styles.field}>
-                    <span>{label}</span>
-                    <input
-                      type="number"
-                      step="any"
-                      value={draft[key] ?? ''}
-                      onChange={(event) => setField(key, toNumberOrBlank(event.target.value))}
-                    />
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className={styles.editorGroup}>
-              <h4>Movement / AI</h4>
-              <div className={styles.grid}>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(draft.overrideMovementBehavior)}
-                    onChange={(event) => setField('overrideMovementBehavior', event.target.checked)}
-                  />
-                  <span>Override movement behavior</span>
-                </label>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(draft.shouldReactToAttack)}
-                    onChange={(event) => setField('shouldReactToAttack', event.target.checked)}
-                  />
-                  <span>React to attack</span>
-                </label>
-                <label className={styles.field}>
-                  <span>Behavior type</span>
-                  <select
-                    value={draft.behaviorType ?? ''}
-                    onChange={(event) => setField('behaviorType', toNumberOrBlank(event.target.value))}
-                  >
-                    <option value="">Use prefab default</option>
-                    {BEHAVIOR_TYPES.map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
+            {openSection === 'behavior' && (
+              <>
+                <div className={styles.editorGroup}>
+                  <h4>Respawn</h4>
+                  <div className={styles.grid}>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(draft.shouldRespawn)}
+                        onChange={(event) => setField('shouldRespawn', event.target.checked)}
+                      />
+                      <span>Should respawn</span>
+                    </label>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(draft.overrideRespawnSettings)}
+                        onChange={(event) => setField('overrideRespawnSettings', event.target.checked)}
+                      />
+                      <span>Override respawn settings</span>
+                    </label>
+                    {RESPAWN_FIELDS.map(([key, label]) => (
+                      <label key={key} className={styles.field}>
+                        <span>{label}</span>
+                        <input
+                          type="number"
+                          step="any"
+                          value={draft[key] ?? ''}
+                          onChange={(event) => setField(key, toNumberOrBlank(event.target.value))}
+                        />
+                      </label>
                     ))}
-                  </select>
-                </label>
-                {MOVEMENT_FIELDS.map(([key, label]) => (
-                  <label key={key} className={styles.field}>
-                    <span>{label}</span>
-                    <input
-                      type="number"
-                      step="any"
-                      value={draft[key] ?? ''}
-                      onChange={(event) => setField(key, toNumberOrBlank(event.target.value))}
-                    />
-                  </label>
-                ))}
-              </div>
-            </div>
+                  </div>
+                </div>
+
+                <div className={styles.editorGroup}>
+                  <h4>Movement / AI</h4>
+                  <div className={styles.grid}>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(draft.overrideMovementBehavior)}
+                        onChange={(event) => setField('overrideMovementBehavior', event.target.checked)}
+                      />
+                      <span>Override movement behavior</span>
+                    </label>
+                    <label className={styles.checkbox}>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(draft.shouldReactToAttack)}
+                        onChange={(event) => setField('shouldReactToAttack', event.target.checked)}
+                      />
+                      <span>React to attack</span>
+                    </label>
+                    <label className={styles.field}>
+                      <span>Behavior type</span>
+                      <select
+                        value={draft.behaviorType ?? ''}
+                        onChange={(event) => setField('behaviorType', toNumberOrBlank(event.target.value))}
+                      >
+                        <option value="">Use prefab default</option>
+                        {BEHAVIOR_TYPES.map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {MOVEMENT_FIELDS.map(([key, label]) => (
+                      <label key={key} className={styles.field}>
+                        <span>{label}</span>
+                        <input
+                          type="number"
+                          step="any"
+                          value={draft[key] ?? ''}
+                          onChange={(event) => setField(key, toNumberOrBlank(event.target.value))}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 
