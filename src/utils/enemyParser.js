@@ -21,6 +21,7 @@ const NAME_KEYS = ['enemyName', 'name', 'Name', 'displayName', 'DisplayName'];
 const IMAGE_KEYS = ['image', 'Image', 'imageUrl', 'ImageUrl', 'icon', 'Icon', 'sprite', 'Sprite'];
 const RESISTANCE_KEYS = ['resistances', 'Resistances', 'elementResistances', 'damageResistances'];
 const ELEMENT_DAMAGE_TAKEN_FIELDS = [
+  ['physicalDamageTakenPercent', 'Physical'],
   ['fireDamageTakenPercent', 'Fire'],
   ['iceDamageTakenPercent', 'Ice'],
   ['lightningDamageTakenPercent', 'Lightning'],

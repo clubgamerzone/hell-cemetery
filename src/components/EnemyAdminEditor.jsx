@@ -57,6 +57,7 @@ const COMBAT_ELEMENTS = [
 ];
 
 const RESISTANCE_FIELDS = [
+  ['physicalDamageTakenPercent', 'Physical'],
   ['fireDamageTakenPercent', 'Fire'],
   ['iceDamageTakenPercent', 'Ice'],
   ['lightningDamageTakenPercent', 'Lightning'],
