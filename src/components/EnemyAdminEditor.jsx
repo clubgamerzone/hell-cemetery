@@ -98,8 +98,8 @@ function findItemOption(itemOptions, value) {
 function resolveDropItemKey(drop, itemOptions) {
   const candidates = [
     drop?.itemName,
-    drop?.itemID,
     drop?.itemId,
+    drop?.itemID,
     drop?.name,
     drop,
   ];
@@ -128,7 +128,8 @@ function normalizeDrop(drop, sourceKey, itemOptions) {
     sourceKey,
     itemKey: resolveDropItemKey(drop, itemOptions),
     itemName: drop.itemName || drop.name || '',
-    itemID: drop.itemID ?? drop.itemId ?? '',
+    itemId: drop.itemId || (isNumericValue(drop.itemID) ? '' : drop.itemID) || '',
+    itemID: isNumericValue(drop.itemID) ? drop.itemID : '',
     dropChance: drop.dropChance ?? drop.chance ?? '',
     minAmount: drop.minAmount ?? '',
     maxAmount: drop.maxAmount ?? '',
@@ -151,7 +152,8 @@ function normalizeDrops(data, itemOptions = []) {
 
 function buildDropSaveData(drop) {
   return {
-    itemID: toNumberOrBlank(drop.itemID),
+    itemId: drop.itemId || '',
+    itemID: toNumberOrZero(drop.itemID),
     itemName: drop.itemName,
     dropChance: toNumberOrBlank(drop.dropChance),
     minAmount: toNumberOrBlank(drop.minAmount),
@@ -171,6 +173,20 @@ function toNumberOrBlank(value) {
   if (value === '' || value === null || value === undefined) return '';
   const parsed = Number(value);
   return Number.isNaN(parsed) ? value : parsed;
+}
+
+function isNumericValue(value) {
+  if (value === '' || value === null || value === undefined) return false;
+  return !Number.isNaN(Number(value));
+}
+
+function toNumberOrZero(value) {
+  return isNumericValue(value) ? Number(value) : 0;
+}
+
+function getLegacyItemID(item) {
+  const value = item?.raw?.ID ?? item?.raw?.id ?? item?.legacyId ?? item?.ID;
+  return isNumericValue(value) ? Number(value) : 0;
 }
 
 function stripDataUri(dataUrl) {
@@ -266,13 +282,14 @@ export default function EnemyAdminEditor({
   function handleItemSelect(index, selectedKey) {
     const selected = itemOptions.find((option) => option.key === selectedKey);
     if (!selected) {
-      setDrop(index, { itemKey: '', itemID: '', itemName: '' });
+      setDrop(index, { itemKey: '', itemId: '', itemID: '', itemName: '' });
       return;
     }
 
     setDrop(index, {
       itemKey: selected.key,
-      itemID: selected.item.itemId || selected.item.firebaseKey,
+      itemId: selected.item.itemId || selected.item.firebaseKey || '',
+      itemID: getLegacyItemID(selected.item),
       itemName: selected.item.itemName,
     });
   }
@@ -285,7 +302,8 @@ export default function EnemyAdminEditor({
       {
         sourceKey: defaultSourceKey,
         itemKey: firstItem?.key || '',
-        itemID: firstItem?.item.itemId || firstItem?.item.firebaseKey || '',
+        itemId: firstItem?.item.itemId || firstItem?.item.firebaseKey || '',
+        itemID: getLegacyItemID(firstItem?.item),
         itemName: firstItem?.item.itemName || '',
         dropChance: 1,
         minAmount: 1,

@@ -115,18 +115,20 @@ function normalizeLootDrops(stats) {
         isGuaranteed: false,
         minAmount: null,
         maxAmount: null,
+        itemId: null,
         itemID: null,
       };
     }
 
     return {
-      id: String(drop.itemID ?? drop.id ?? index),
+      id: String(drop.itemId ?? drop.itemID ?? drop.id ?? index),
       itemName: drop.itemName || drop.name || drop.Name || `Item ${index + 1}`,
       dropTier: drop.dropTier || drop.tier || null,
       dropChance: drop.dropChance ?? drop.chance ?? null,
       isGuaranteed: Boolean(drop.isGuaranteed),
       minAmount: drop.minAmount ?? null,
       maxAmount: drop.maxAmount ?? null,
+      itemId: drop.itemId ?? null,
       itemID: drop.itemID ?? drop.id ?? null,
     };
   });
