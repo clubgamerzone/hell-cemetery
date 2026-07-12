@@ -30,6 +30,32 @@ const BEHAVIOR_TYPES = [
   [2, 'Patrol'],
 ];
 
+const ENEMY_FAMILIES = [
+  'DEFAULT',
+  'UNDEAD',
+  'DEMON',
+  'BEAST',
+  'HUMAN',
+  'CONSTRUCT',
+  'SPIRIT',
+  'INSECT',
+  'PLANT',
+  'AQUATIC',
+  'DRAGON',
+  'ABERRATION',
+];
+
+const COMBAT_ELEMENTS = [
+  'PHYSICAL',
+  'FIRE',
+  'ICE',
+  'LIGHTNING',
+  'POISON',
+  'HOLY',
+  'DARK',
+  'ARCANE',
+];
+
 const RESISTANCE_FIELDS = [
   ['fireDamageTakenPercent', 'Fire'],
   ['iceDamageTakenPercent', 'Ice'],
@@ -184,6 +210,16 @@ function toNumberOrZero(value) {
   return isNumericValue(value) ? Number(value) : 0;
 }
 
+function normalizeEnumName(value) {
+  if (value === '' || value === null || value === undefined) return '';
+  return String(value).trim().replace(/\s+/g, '_').toUpperCase();
+}
+
+function normalizeCategoryName(value) {
+  if (value === '' || value === null || value === undefined) return '';
+  return String(value).trim().replace(/\s+/g, '_');
+}
+
 function getLegacyItemID(item) {
   const value = item?.raw?.ID ?? item?.raw?.id ?? item?.legacyId ?? item?.ID;
   return isNumericValue(value) ? Number(value) : 0;
@@ -237,6 +273,7 @@ export default function EnemyAdminEditor({
     const unique = (values) => Array.from(new Set(values.filter(Boolean).map(String))).sort();
     return {
       creatureTypes: unique(enemies.flatMap((entry) => [
+        ...ENEMY_FAMILIES,
         entry.enemyFamily,
         entry.raw?.enemyFamily,
         entry.raw?.creatureType,
@@ -247,6 +284,7 @@ export default function EnemyAdminEditor({
         entry.raw?.category,
       ])),
       attackElements: unique(enemies.flatMap((entry) => [
+        ...COMBAT_ELEMENTS,
         entry.attackElement,
         entry.raw?.attackElement,
       ])),
@@ -277,6 +315,10 @@ export default function EnemyAdminEditor({
     setDrops((current) => current.map((drop, dropIndex) => (
       dropIndex === index ? { ...drop, ...patch } : drop
     )));
+  }
+
+  function setCategory(value) {
+    setField('category', normalizeCategoryName(value));
   }
 
   function handleItemSelect(index, selectedKey) {
@@ -332,6 +374,14 @@ export default function EnemyAdminEditor({
 
   function buildSaveData() {
     const next = clone(draft);
+    next.category = normalizeCategoryName(next.category || enemy.category);
+    if (next.enemyFamily !== undefined && next.enemyFamily !== '') {
+      next.enemyFamily = normalizeEnumName(next.enemyFamily);
+    }
+    if (next.attackElement !== undefined && next.attackElement !== '') {
+      next.attackElement = normalizeEnumName(next.attackElement);
+    }
+
     if (openSection !== 'loot') {
       return next;
     }
@@ -360,8 +410,9 @@ export default function EnemyAdminEditor({
         return;
       }
 
-      const movePath = openSection === 'identity' ? getCategoryMovePath(enemy, next.category || enemy.category) : null;
-      if (openSection === 'identity' && (next.category || enemy.category) && /[.#$\[\]/]/.test(String(next.category || enemy.category))) {
+      const category = normalizeCategoryName(next.category || enemy.category);
+      const movePath = openSection === 'identity' ? getCategoryMovePath(enemy, category) : null;
+      if (openSection === 'identity' && category && /[.#$\[\]/]/.test(category)) {
         setError('Category cannot contain ., #, $, [, ], or /.');
         return;
       }
@@ -456,8 +507,8 @@ export default function EnemyAdminEditor({
               <span>Creature type</span>
               <input
                 list="enemy-creature-types"
-                value={draft.enemyFamily || ''}
-                onChange={(event) => setField('enemyFamily', event.target.value)}
+                value={draft.enemyFamily ?? ''}
+                onChange={(event) => setField('enemyFamily', normalizeEnumName(event.target.value))}
               />
               <datalist id="enemy-creature-types">
                 {enemyOptions.creatureTypes.map((value) => (
@@ -467,23 +518,29 @@ export default function EnemyAdminEditor({
             </label>
             <label className={styles.field}>
               <span>Category</span>
-              <input
-                list="enemy-categories"
-                value={draft.category || enemy.category || ''}
-                onChange={(event) => setField('category', event.target.value)}
-              />
-              <datalist id="enemy-categories">
-                {enemyOptions.categories.map((value) => (
-                  <option key={value} value={value} />
-                ))}
-              </datalist>
+              <div className={styles.comboField}>
+                <select
+                  value={enemyOptions.categories.includes(normalizeCategoryName(draft.category || enemy.category)) ? normalizeCategoryName(draft.category || enemy.category) : ''}
+                  onChange={(event) => setCategory(event.target.value)}
+                >
+                  <option value="">New category...</option>
+                  {enemyOptions.categories.map((value) => (
+                    <option key={value} value={value}>{value.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
+                <input
+                  value={normalizeCategoryName(draft.category || enemy.category)}
+                  onChange={(event) => setCategory(event.target.value)}
+                  placeholder="New category"
+                />
+              </div>
             </label>
             <label className={styles.field}>
               <span>Attack element</span>
               <input
                 list="enemy-attack-elements"
-                value={draft.attackElement || ''}
-                onChange={(event) => setField('attackElement', event.target.value)}
+                value={draft.attackElement ?? ''}
+                onChange={(event) => setField('attackElement', normalizeEnumName(event.target.value))}
               />
               <datalist id="enemy-attack-elements">
                 {enemyOptions.attackElements.map((value) => (

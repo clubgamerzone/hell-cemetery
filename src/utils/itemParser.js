@@ -2,16 +2,18 @@ const DEFAULT_DESCRIPTION =
   'An artifact of unknown power, forged in the depths of the cemetery.';
 
 const ITEM_TYPE_LABELS = {
-  0: 'Weapon',
-  1: 'Armor',
-  2: 'Helmet',
-  3: 'Boots',
-  4: 'Usable',
+  0: 'Usable',
+  1: 'Weapon',
+  2: 'Armor',
+  3: 'Helmet',
+  4: 'Boots',
   5: 'Ring',
   6: 'Amulet',
   7: 'Legs',
   8: 'Shield',
   9: 'Material',
+  10: 'Quest',
+  11: 'Misc',
 };
 
 const RARITY_LABELS = {
