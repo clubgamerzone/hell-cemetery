@@ -212,7 +212,21 @@ function toNumberOrZero(value) {
 
 function normalizeEnumName(value) {
   if (value === '' || value === null || value === undefined) return '';
+  if (isNumericValue(value)) {
+    return String(value);
+  }
+
   return String(value).trim().replace(/\s+/g, '_').toUpperCase();
+}
+
+function normalizeEnumValue(value, options, fallback) {
+  if (value === '' || value === null || value === undefined) return fallback;
+  if (isNumericValue(value)) {
+    return options[Number(value)] || fallback;
+  }
+
+  const normalized = normalizeEnumName(value);
+  return options.includes(normalized) ? normalized : fallback;
 }
 
 function normalizeCategoryName(value) {
@@ -296,7 +310,10 @@ export default function EnemyAdminEditor({
   }, [enemies]);
 
   useEffect(() => {
-    setDraft(clone(enemy.raw));
+    const nextDraft = clone(enemy.raw);
+    nextDraft.enemyFamily = normalizeEnumValue(nextDraft.enemyFamily, ENEMY_FAMILIES, 'DEFAULT');
+    nextDraft.attackElement = normalizeEnumValue(nextDraft.attackElement, COMBAT_ELEMENTS, 'PHYSICAL');
+    setDraft(nextDraft);
     setDrops(normalizeDrops(enemy.raw, itemOptions));
     setError('');
     setMessage('');
@@ -375,12 +392,8 @@ export default function EnemyAdminEditor({
   function buildSaveData() {
     const next = clone(draft);
     next.category = normalizeCategoryName(next.category || enemy.category);
-    if (next.enemyFamily !== undefined && next.enemyFamily !== '') {
-      next.enemyFamily = normalizeEnumName(next.enemyFamily);
-    }
-    if (next.attackElement !== undefined && next.attackElement !== '') {
-      next.attackElement = normalizeEnumName(next.attackElement);
-    }
+    next.enemyFamily = normalizeEnumValue(next.enemyFamily, ENEMY_FAMILIES, 'DEFAULT');
+    next.attackElement = normalizeEnumValue(next.attackElement, COMBAT_ELEMENTS, 'PHYSICAL');
 
     if (openSection !== 'loot') {
       return next;
@@ -505,16 +518,14 @@ export default function EnemyAdminEditor({
             </label>
             <label className={styles.field}>
               <span>Creature type</span>
-              <input
-                list="enemy-creature-types"
-                value={draft.enemyFamily ?? ''}
-                onChange={(event) => setField('enemyFamily', normalizeEnumName(event.target.value))}
-              />
-              <datalist id="enemy-creature-types">
-                {enemyOptions.creatureTypes.map((value) => (
-                  <option key={value} value={value} />
+              <select
+                value={normalizeEnumValue(draft.enemyFamily, ENEMY_FAMILIES, 'DEFAULT')}
+                onChange={(event) => setField('enemyFamily', event.target.value)}
+              >
+                {ENEMY_FAMILIES.map((value) => (
+                  <option key={value} value={value}>{value.replace(/_/g, ' ')}</option>
                 ))}
-              </datalist>
+              </select>
             </label>
             <label className={styles.field}>
               <span>Category</span>
@@ -537,16 +548,14 @@ export default function EnemyAdminEditor({
             </label>
             <label className={styles.field}>
               <span>Attack element</span>
-              <input
-                list="enemy-attack-elements"
-                value={draft.attackElement ?? ''}
-                onChange={(event) => setField('attackElement', normalizeEnumName(event.target.value))}
-              />
-              <datalist id="enemy-attack-elements">
-                {enemyOptions.attackElements.map((value) => (
-                  <option key={value} value={value} />
+              <select
+                value={normalizeEnumValue(draft.attackElement, COMBAT_ELEMENTS, 'PHYSICAL')}
+                onChange={(event) => setField('attackElement', event.target.value)}
+              >
+                {COMBAT_ELEMENTS.map((value) => (
+                  <option key={value} value={value}>{value.replace(/_/g, ' ')}</option>
                 ))}
-              </datalist>
+              </select>
             </label>
             <label className={styles.field}>
               <span>Rarity</span>
