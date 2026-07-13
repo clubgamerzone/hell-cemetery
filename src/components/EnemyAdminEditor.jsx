@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import GothicButton from './GothicButton';
 import { deleteContentNode, saveContentNode } from '../firebase/databaseService';
-import { formatBytes, reduceStoredImage, sanitizeStorageSegment, uploadEditorImage } from '../utils/storageImages';
+import { formatBytes, getStoredImageInfo, reduceStoredImage, sanitizeStorageSegment, uploadEditorImage } from '../utils/storageImages';
 import styles from './EnemyAdminEditor.module.css';
 
 const COMBAT_STAT_FIELDS = [
@@ -253,6 +253,17 @@ function getCategoryMovePath(enemy, category) {
   return `EnemySettings/Categories/${nextCategory}/${enemyKey}${suffix}`;
 }
 
+function getPortraitDetailText(draft, imageInfo) {
+  const size = imageInfo?.imageBytes ?? draft.encyclopediaPortraitBytes;
+  const dimensions = draft.encyclopediaPortraitWidth && draft.encyclopediaPortraitHeight
+    ? `${draft.encyclopediaPortraitWidth} x ${draft.encyclopediaPortraitHeight}px`
+    : '';
+  const mimeType = imageInfo?.imageMimeType || draft.encyclopediaPortraitMimeType || '';
+  return [formatBytes(size), dimensions, mimeType.replace('image/', '').toUpperCase()]
+    .filter(Boolean)
+    .join(' | ');
+}
+
 export default function EnemyAdminEditor({
   enemy,
   enemies = [],
@@ -268,6 +279,7 @@ export default function EnemyAdminEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [portraitInfo, setPortraitInfo] = useState(null);
 
   const itemOptions = useMemo(
     () => items.map((item) => ({
@@ -313,7 +325,31 @@ export default function EnemyAdminEditor({
     setDrops(normalizeDrops(enemy.raw, itemOptions));
     setError('');
     setMessage('');
+    setPortraitInfo(null);
   }, [enemy, itemOptions]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const storagePath = draft.encyclopediaPortraitStoragePath;
+    const imageUrl = draft.encyclopediaPortraitUrl || enemy.imageUrl;
+
+    if (!storagePath && !imageUrl) {
+      setPortraitInfo(null);
+      return undefined;
+    }
+
+    getStoredImageInfo(storagePath, imageUrl)
+      .then((info) => {
+        if (!cancelled) setPortraitInfo(info);
+      })
+      .catch(() => {
+        if (!cancelled) setPortraitInfo(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [draft.encyclopediaPortraitStoragePath, draft.encyclopediaPortraitUrl, draft.encyclopediaPortraitVersion, enemy.imageUrl]);
 
   function setField(key, value) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -389,11 +425,16 @@ export default function EnemyAdminEditor({
         encyclopediaPortraitUrl: upload.imageUrl,
         encyclopediaPortraitStoragePath: upload.imageStoragePath,
         encyclopediaPortraitMimeType: upload.imageMimeType,
+        encyclopediaPortraitBytes: upload.imageBytes,
         encyclopediaPortraitWidth: upload.imageWidth,
         encyclopediaPortraitHeight: upload.imageHeight,
         encyclopediaPortraitVersion: upload.imageVersion,
         encyclopediaPortraitBase64: null,
       }));
+      setPortraitInfo({
+        imageBytes: upload.imageBytes,
+        imageMimeType: upload.imageMimeType,
+      });
       setMessage('Image uploaded. Save the enemy to keep this image URL in Firebase.');
     } catch {
       setError('Image upload failed. Check Firebase Storage rules for this admin account.');
@@ -434,10 +475,15 @@ export default function EnemyAdminEditor({
         encyclopediaPortraitUrl: optimized.imageUrl || current.encyclopediaPortraitUrl,
         encyclopediaPortraitStoragePath: optimized.imageStoragePath || current.encyclopediaPortraitStoragePath,
         encyclopediaPortraitMimeType: optimized.imageMimeType || current.encyclopediaPortraitMimeType,
+        encyclopediaPortraitBytes: optimized.imageBytes || current.encyclopediaPortraitBytes,
         encyclopediaPortraitWidth: optimized.imageWidth || current.encyclopediaPortraitWidth,
         encyclopediaPortraitHeight: optimized.imageHeight || current.encyclopediaPortraitHeight,
         encyclopediaPortraitVersion: optimized.imageVersion || current.encyclopediaPortraitVersion,
       }));
+      setPortraitInfo({
+        imageBytes: optimized.optimizedBytes,
+        imageMimeType: optimized.imageMimeType || 'image/png',
+      });
       const before = formatBytes(optimized.originalBytes);
       const after = formatBytes(optimized.optimizedBytes);
       setMessage(optimized.reduced
@@ -532,10 +578,13 @@ export default function EnemyAdminEditor({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/png"
               className={styles.fileInput}
               onChange={handleImageChange}
             />
+            <p className={styles.imageMeta}>
+              {getPortraitDetailText(draft, portraitInfo) || 'No Storage image size yet'}
+            </p>
             <button
               type="button"
               className={styles.optimizeButton}
@@ -565,10 +614,13 @@ export default function EnemyAdminEditor({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp"
+                accept="image/png"
                 className={styles.fileInput}
                 onChange={handleImageChange}
               />
+              <p className={styles.imageMeta}>
+                {getPortraitDetailText(draft, portraitInfo) || 'No Storage image size yet'}
+              </p>
               <button
                 type="button"
                 className={styles.optimizeButton}

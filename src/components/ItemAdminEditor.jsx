@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import itemPlaceholder from '../assets/images/item-placeholder.svg';
 import { saveContentNode } from '../firebase/databaseService';
-import { formatBytes, reduceStoredImage, sanitizeStorageSegment, uploadEditorImage } from '../utils/storageImages';
+import { formatBytes, getStoredImageInfo, reduceStoredImage, sanitizeStorageSegment, uploadEditorImage } from '../utils/storageImages';
 import GothicButton from './GothicButton';
 import styles from './ItemAdminEditor.module.css';
 
@@ -138,18 +138,54 @@ function getImageUrl(draft, fallback) {
   return draft.imageUrl || draft.image || fallback || itemPlaceholder;
 }
 
+function getImageDetailText(draft, imageInfo) {
+  const size = imageInfo?.imageBytes ?? draft.imageBytes;
+  const dimensions = draft.imageWidth && draft.imageHeight
+    ? `${draft.imageWidth} x ${draft.imageHeight}px`
+    : '';
+  const mimeType = imageInfo?.imageMimeType || draft.imageMimeType || '';
+  return [formatBytes(size), dimensions, mimeType.replace('image/', '').toUpperCase()]
+    .filter(Boolean)
+    .join(' | ');
+}
+
 export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader = false }) {
   const fileInputRef = useRef(null);
   const [draft, setDraft] = useState(() => clone(item.raw));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [imageInfo, setImageInfo] = useState(null);
 
   useEffect(() => {
     setDraft(clone(item.raw));
     setError('');
     setMessage('');
+    setImageInfo(null);
   }, [item]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const storagePath = draft.imageStoragePath;
+    const imageUrl = draft.imageUrl || item.imageUrl;
+
+    if (!storagePath && !imageUrl) {
+      setImageInfo(null);
+      return undefined;
+    }
+
+    getStoredImageInfo(storagePath, imageUrl)
+      .then((info) => {
+        if (!cancelled) setImageInfo(info);
+      })
+      .catch(() => {
+        if (!cancelled) setImageInfo(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [draft.imageStoragePath, draft.imageUrl, draft.imageVersion, item.imageUrl]);
 
   function setField(key, value) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -174,6 +210,10 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
         ...upload,
         imageBase64: null,
       }));
+      setImageInfo({
+        imageBytes: upload.imageBytes,
+        imageMimeType: upload.imageMimeType,
+      });
       setMessage('Image uploaded. Save the item to keep this image URL in Firebase.');
     } catch {
       setError('Image upload failed. Check Firebase Storage rules for this admin account.');
@@ -206,11 +246,16 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
         imageUrl: optimized.imageUrl || current.imageUrl,
         imageStoragePath: optimized.imageStoragePath || current.imageStoragePath,
         imageMimeType: optimized.imageMimeType || current.imageMimeType,
+        imageBytes: optimized.imageBytes || current.imageBytes,
         imageWidth: optimized.imageWidth || current.imageWidth,
         imageHeight: optimized.imageHeight || current.imageHeight,
         imageVersion: optimized.imageVersion || current.imageVersion,
         imageBase64: current.imageBase64,
       }));
+      setImageInfo({
+        imageBytes: optimized.optimizedBytes,
+        imageMimeType: optimized.imageMimeType || 'image/png',
+      });
       const before = formatBytes(optimized.originalBytes);
       const after = formatBytes(optimized.optimizedBytes);
       setMessage(optimized.reduced
@@ -270,10 +315,13 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png"
             className={styles.fileInput}
             onChange={handleImageChange}
           />
+          <p className={styles.imageMeta}>
+            {getImageDetailText(draft, imageInfo) || 'No Storage image size yet'}
+          </p>
           <button
             type="button"
             className={styles.optimizeButton}

@@ -1,4 +1,4 @@
-import { getBlob, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getBlob, getDownloadURL, getMetadata, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '../firebase/firebaseConfig';
 
 export function sanitizeStorageSegment(value, fallback = 'asset') {
@@ -60,9 +60,32 @@ export async function uploadEditorImage(file, storageBasePath) {
     imageUrl,
     imageStoragePath: storagePath,
     imageMimeType: mimeType,
+    imageBytes: file.size,
     imageWidth: dimensions.width,
     imageHeight: dimensions.height,
     imageVersion: Date.now(),
+  };
+}
+
+export async function getStoredImageInfo(storagePath, fallbackUrl) {
+  if (!storagePath && !fallbackUrl) return null;
+
+  if (storagePath) {
+    const objectRef = ref(storage, storagePath);
+    const metadata = await getMetadata(objectRef);
+    return {
+      imageBytes: Number(metadata.size) || null,
+      imageMimeType: metadata.contentType || null,
+      updated: metadata.updated || null,
+    };
+  }
+
+  const response = await fetch(fallbackUrl, { method: 'HEAD' });
+  if (!response.ok) return null;
+  return {
+    imageBytes: Number(response.headers.get('content-length')) || null,
+    imageMimeType: response.headers.get('content-type') || null,
+    updated: response.headers.get('last-modified') || null,
   };
 }
 
@@ -100,8 +123,7 @@ function canvasToBlob(canvas, mimeType, quality) {
 async function createReducedImageBlob(sourceBlob, options = {}) {
   const image = await loadImageFromBlob(sourceBlob);
   const maxDimension = options.maxDimension || 512;
-  const targetMimeType = options.mimeType || sourceBlob.type || 'image/png';
-  const quality = options.quality ?? 0.86;
+  const targetMimeType = 'image/png';
   const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
   const width = Math.max(1, Math.round(image.naturalWidth * scale));
   const height = Math.max(1, Math.round(image.naturalHeight * scale));
@@ -114,7 +136,7 @@ async function createReducedImageBlob(sourceBlob, options = {}) {
   context.imageSmoothingEnabled = false;
   context.drawImage(image, 0, 0, width, height);
 
-  const blob = await canvasToBlob(canvas, targetMimeType, quality);
+  const blob = await canvasToBlob(canvas, targetMimeType);
   return { blob, width, height };
 }
 
@@ -145,7 +167,7 @@ export async function reduceStoredImage(storagePath, fallbackUrl, options = {}) 
   }
 
   await uploadBytes(objectRef, optimized.blob, {
-    contentType: optimized.blob.type || options.mimeType || sourceBlob.type || 'image/png',
+    contentType: 'image/png',
     customMetadata: {
       optimizedVia: 'hell-cemetery-web',
     },
@@ -158,7 +180,8 @@ export async function reduceStoredImage(storagePath, fallbackUrl, options = {}) 
     optimizedBytes: optimized.blob.size,
     imageUrl,
     imageStoragePath: storagePath,
-    imageMimeType: optimized.blob.type || options.mimeType || sourceBlob.type || 'image/png',
+    imageMimeType: 'image/png',
+    imageBytes: optimized.blob.size,
     imageWidth: optimized.width,
     imageHeight: optimized.height,
     imageVersion: Date.now(),
