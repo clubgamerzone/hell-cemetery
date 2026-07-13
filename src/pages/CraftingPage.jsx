@@ -7,9 +7,7 @@ import {
 } from '../firebase/databaseService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
-import CollapsibleJson from '../components/CollapsibleJson';
-import AdminJsonEditor from '../components/AdminJsonEditor';
-import CraftingRecipeAdminEditor from '../components/CraftingRecipeAdminEditor';
+import CraftingRecipeEditModal from '../components/CraftingRecipeEditModal';
 import { useAuth } from '../context/AuthContext';
 import styles from './CraftingPage.module.css';
 
@@ -98,9 +96,9 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
             <button
               type="button"
               className={styles.editButton}
-              onClick={() => setIsEditing((current) => !current)}
+              onClick={() => setIsEditing(true)}
             >
-              {isEditing ? 'Close' : 'Edit'}
+              Edit
             </button>
           )}
         </div>
@@ -129,22 +127,13 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
       )}
 
       {showDebug && isEditing && (
-        <>
-          <CraftingRecipeAdminEditor
-            recipe={recipe}
-            items={items}
-            validate={validateRecipe}
-            onSaved={onSaved}
-          />
-          <AdminJsonEditor
-            title="Advanced Recipe JSON"
-            path={recipe.writePath}
-            value={recipe.raw}
-            validate={validateRecipe}
-            onSaved={onSaved}
-          />
-          <CollapsibleJson data={recipe.raw} title="Raw recipe" />
-        </>
+        <CraftingRecipeEditModal
+          recipe={recipe}
+          items={items}
+          validate={validateRecipe}
+          onClose={() => setIsEditing(false)}
+          onSaved={onSaved}
+        />
       )}
     </article>
   );

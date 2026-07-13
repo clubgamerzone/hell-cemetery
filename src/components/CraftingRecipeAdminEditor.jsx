@@ -48,7 +48,7 @@ function normalizeRecipeDraft(recipe) {
   };
 }
 
-export default function CraftingRecipeAdminEditor({ recipe, items, validate, onSaved }) {
+export default function CraftingRecipeAdminEditor({ recipe, items, validate, onSaved, compactHeader = false }) {
   const [draft, setDraft] = useState(() => normalizeRecipeDraft(recipe));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -146,9 +146,11 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
 
   return (
     <section className={styles.editor}>
-      <div className={styles.header}>
-        <h3>Edit Recipe</h3>
-      </div>
+      {!compactHeader && (
+        <div className={styles.header}>
+          <h3>Edit Recipe</h3>
+        </div>
+      )}
 
       <div className={styles.grid}>
         <label className={styles.field}>
