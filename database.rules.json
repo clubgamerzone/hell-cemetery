@@ -1,0 +1,99 @@
+{
+  "rules": {
+    "EnemySettings": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
+    "ItemSettings": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
+    "CraftingSettings": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
+    "CommunityFeedback": {
+      "posts": {
+        ".read": true,
+        "$postId": {
+          ".write": "auth != null && (!data.exists() || data.child('authorUid').val() == auth.uid || auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2')",
+          ".validate": "newData.hasChildren(['title', 'body', 'category', 'authorUid', 'authorName', 'createdAt', 'status'])"
+        }
+      }
+    },
+    "GameData": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "Items": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
+    "CraftingRecipes": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
+    "Recipes": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
+    "Clans": {
+      ".read": "auth != null",
+      ".write": false
+    },
+    "Players": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "PlayerCastles": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "PlayerCastleRaidHistory": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "PlayerMarket": {
+      "Listings": {
+        ".read": true,
+        ".write": "auth != null"
+      },
+      "PurchaseLocks": {
+        ".read": false,
+        ".write": "auth != null"
+      },
+      "Payouts": {
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null"
+        }
+      },
+      "GlobalBankLedger": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+      "SaleHistory": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      },
+      "ReturnedListings": {
+        "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null"
+        }
+      },
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}

@@ -48,14 +48,18 @@ export async function getFeedbackPosts() {
 
 export async function saveFeedbackPost(post) {
   const postId = `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  await saveContentNode(`CommunityFeedback/posts/${postId}`, {
-    ...post,
-    id: postId,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    status: 'visible',
-  });
-  return postId;
+  try {
+    await saveContentNode(`CommunityFeedback/posts/${postId}`, {
+      ...post,
+      id: postId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      status: 'visible',
+    });
+    return postId;
+  } catch (error) {
+    throw new Error(error?.code || error?.message || 'feedback-post-failed');
+  }
 }
 
 export async function removeFeedbackPost(postId) {

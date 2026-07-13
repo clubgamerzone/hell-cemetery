@@ -127,8 +127,11 @@ export default function FeedbackPage() {
       setForm({ title: '', category: CATEGORIES[0], body: '' });
       setMessage('Feedback posted.');
       await loadPosts();
-    } catch {
-      setError('Could not post feedback. Please try again.');
+    } catch (exception) {
+      const messageText = String(exception?.message || '').toLowerCase();
+      setError(messageText.includes('permission_denied') || messageText.includes('permission denied')
+        ? 'Firebase rejected the post. Update Realtime Database rules to allow signed-in users to write CommunityFeedback/posts.'
+        : `Could not post feedback: ${exception.message || 'Please try again.'}`);
     } finally {
       setSaving(false);
     }
