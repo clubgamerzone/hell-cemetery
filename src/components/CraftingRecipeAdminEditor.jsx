@@ -21,6 +21,24 @@ function getItemName(item) {
   return item.itemName || item.firebaseKey || item.itemId;
 }
 
+function buildItemReference(item) {
+  if (!item) {
+    return {
+      itemId: '',
+      itemName: '',
+      legacyId: 0,
+      prefabPath: '',
+    };
+  }
+
+  return {
+    itemId: item.itemId || item.firebaseKey || '',
+    itemName: item.itemName || '',
+    legacyId: item.raw?.legacyId ?? item.raw?.ID ?? item.raw?.id ?? 0,
+    prefabPath: item.itemUsePrefabPath || item.raw?.itemUsePrefabPath || item.pickupPrefabPath || item.raw?.pickupPrefabPath || '',
+  };
+}
+
 function normalizeRecipeDraft(recipe) {
   const source = clone(recipe.raw);
   return {
@@ -64,10 +82,7 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
 
   function selectOutput(selectedKey) {
     const selected = itemOptions.find((option) => option.key === selectedKey);
-    setOutput({
-      itemId: selected?.item.itemId || selected?.item.firebaseKey || '',
-      itemName: selected?.item.itemName || '',
-    });
+    setOutput(buildItemReference(selected?.item));
   }
 
   function setIngredient(index, patch) {
@@ -81,10 +96,7 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
 
   function selectIngredient(index, selectedKey) {
     const selected = itemOptions.find((option) => option.key === selectedKey);
-    setIngredient(index, {
-      itemId: selected?.item.itemId || selected?.item.firebaseKey || '',
-      itemName: selected?.item.itemName || '',
-    });
+    setIngredient(index, buildItemReference(selected?.item));
   }
 
   function addIngredient() {
@@ -94,8 +106,7 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
       ingredients: [
         ...current.ingredients,
         {
-          itemId: firstItem?.item.itemId || firstItem?.item.firebaseKey || '',
-          itemName: firstItem?.item.itemName || '',
+          ...buildItemReference(firstItem?.item),
           amount: 1,
         },
       ],
@@ -213,6 +224,14 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
                 value={draft.output?.amount ?? 1}
                 onChange={(event) => setOutput({ amount: toNumberOrBlank(event.target.value) })}
               />
+            </label>
+            <label className={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={Boolean(draft.output?.tradeable)}
+                onChange={(event) => setOutput({ tradeable: event.target.checked })}
+              />
+              <span>Requires online validation / tradeable</span>
             </label>
           </div>
         </div>

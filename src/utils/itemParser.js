@@ -155,7 +155,7 @@ export function normalizeItemSettings(data) {
 
 export function normalizeCraftingSettings(data) {
   const recipesNode = data?.recipes || data?.CraftingSettings?.recipes || data;
-  const basePath = data?.recipes || data?.CraftingSettings?.recipes ? 'CraftingSettings/recipes' : 'CraftingSettings';
+  const basePath = 'CraftingSettings/recipes';
   if (!isPlainObject(recipesNode)) return [];
 
   return Object.entries(recipesNode)
