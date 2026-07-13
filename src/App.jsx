@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage';
 import EnemiesPage from './pages/EnemiesPage';
 import ItemsPage from './pages/ItemsPage';
 import CraftingPage from './pages/CraftingPage';
+import FeedbackPage from './pages/FeedbackPage';
 import GameDataPage from './pages/GameDataPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/enemies" element={<EnemiesPage />} />
             <Route path="/items" element={<ItemsPage />} />
             <Route path="/crafting" element={<CraftingPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
             <Route path="/game-data" element={<GameDataPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           </Routes>

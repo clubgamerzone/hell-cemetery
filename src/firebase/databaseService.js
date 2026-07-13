@@ -35,6 +35,33 @@ export async function deleteContentNode(path) {
   await set(ref(database, path), null);
 }
 
+export async function getFeedbackPosts() {
+  try {
+    const data = await fetchNode('CommunityFeedback/posts');
+    return normalizeToArray(data)
+      .filter((post) => post.status !== 'deleted')
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  } catch {
+    throw new Error('Unable to load community feedback.');
+  }
+}
+
+export async function saveFeedbackPost(post) {
+  const postId = `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  await saveContentNode(`CommunityFeedback/posts/${postId}`, {
+    ...post,
+    id: postId,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    status: 'visible',
+  });
+  return postId;
+}
+
+export async function removeFeedbackPost(postId) {
+  await deleteContentNode(`CommunityFeedback/posts/${postId}`);
+}
+
 function sortChunkEntries(chunks) {
   return Object.entries(chunks || {}).sort(([leftKey], [rightKey]) => {
     const leftIndex = Number(String(leftKey).replace('chunk_', ''));

@@ -10,6 +10,7 @@ const navLinks = [
   { to: '/enemies', label: 'Enemies' },
   { to: '/items', label: 'Items' },
   { to: '/crafting', label: 'Crafting' },
+  { to: '/feedback', label: 'Feedback' },
   { to: '/profile', label: 'Profile' },
   { to: '/privacy-policy', label: 'Privacy Policy' },
 ];

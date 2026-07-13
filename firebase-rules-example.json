@@ -12,6 +12,15 @@
       ".read": true,
       ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
     },
+    "CommunityFeedback": {
+      "posts": {
+        ".read": true,
+        "$postId": {
+          ".write": "auth != null && (!data.exists() || data.child('authorUid').val() == auth.uid || auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2')",
+          ".validate": "newData.hasChildren(['title', 'body', 'category', 'authorUid', 'authorName', 'createdAt', 'status'])"
+        }
+      }
+    },
     "GameData": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
