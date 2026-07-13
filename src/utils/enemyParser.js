@@ -191,9 +191,11 @@ function buildEnemy({ category, enemyKey, stats, path, writePath }) {
     categoryLabel,
     name,
     description: (pickField(stats, ['description', 'Description', 'lore', 'Lore']) || DEFAULT_LORE).trim(),
-    imageUrl: dataUriFromBase64(stats.encyclopediaPortraitBase64, stats.encyclopediaPortraitMimeType) ||
-      pickField(stats, IMAGE_KEYS),
-    frameUrl: dataUriFromBase64(stats.encyclopediaCardFrameBase64, stats.encyclopediaCardFrameMimeType),
+    imageUrl: stats.encyclopediaPortraitUrl ||
+      pickField(stats, IMAGE_KEYS) ||
+      dataUriFromBase64(stats.encyclopediaPortraitBase64, stats.encyclopediaPortraitMimeType),
+    frameUrl: stats.encyclopediaCardFrameUrl ||
+      dataUriFromBase64(stats.encyclopediaCardFrameBase64, stats.encyclopediaCardFrameMimeType),
     isBoss: Boolean(stats.isBoss ?? stats.IsBoss),
     rarity: stats.rarity ?? null,
     enemyFamily: stats.enemyFamily || null,

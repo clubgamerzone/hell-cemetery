@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import GothicButton from './GothicButton';
 import { deleteContentNode, saveContentNode } from '../firebase/databaseService';
+import { formatBytes, reduceStoredImage, sanitizeStorageSegment, uploadEditorImage } from '../utils/storageImages';
 import styles from './EnemyAdminEditor.module.css';
 
 const COMBAT_STAT_FIELDS = [
@@ -240,12 +241,6 @@ function getLegacyItemID(item) {
   return isNumericValue(value) ? Number(value) : 0;
 }
 
-function stripDataUri(dataUrl) {
-  const [header, base64] = String(dataUrl).split(',');
-  const mimeType = header.match(/^data:(.+);base64$/)?.[1] || 'image/png';
-  return { base64, mimeType };
-}
-
 function getCategoryMovePath(enemy, category) {
   const nextCategory = String(category || '').trim();
   if (!nextCategory || /[.#$\[\]/]/.test(nextCategory)) return null;
@@ -378,16 +373,81 @@ export default function EnemyAdminEditor({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const { base64, mimeType } = stripDataUri(reader.result);
+    setSaving(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const category = normalizeCategoryName(draft.category || enemy.category || 'uncategorized');
+      const enemyName = draft.enemyName || draft.name || enemy.name || enemy.id;
+      const upload = await uploadEditorImage(
+        file,
+        `game-assets/enemies/${sanitizeStorageSegment(category, 'category')}/${sanitizeStorageSegment(enemyName, 'enemy')}/portrait`,
+      );
       setDraft((current) => ({
         ...current,
-        encyclopediaPortraitBase64: base64,
-        encyclopediaPortraitMimeType: mimeType,
+        encyclopediaPortraitUrl: upload.imageUrl,
+        encyclopediaPortraitStoragePath: upload.imageStoragePath,
+        encyclopediaPortraitMimeType: upload.imageMimeType,
+        encyclopediaPortraitWidth: upload.imageWidth,
+        encyclopediaPortraitHeight: upload.imageHeight,
+        encyclopediaPortraitVersion: upload.imageVersion,
+        encyclopediaPortraitBase64: null,
       }));
-    };
-    reader.readAsDataURL(file);
+      setMessage('Image uploaded. Save the enemy to keep this image URL in Firebase.');
+    } catch {
+      setError('Image upload failed. Check Firebase Storage rules for this admin account.');
+    } finally {
+      setSaving(false);
+      event.target.value = '';
+    }
+  }
+
+  function getPortraitUrl() {
+    if (draft.encyclopediaPortraitUrl) return draft.encyclopediaPortraitUrl;
+    if (draft.encyclopediaPortraitBase64) {
+      return `data:${draft.encyclopediaPortraitMimeType || 'image/png'};base64,${draft.encyclopediaPortraitBase64}`;
+    }
+    return enemy.imageUrl;
+  }
+
+  async function handleReduceImageSize() {
+    const storagePath = draft.encyclopediaPortraitStoragePath;
+    if (!storagePath) {
+      setError('This portrait is not in Firebase Storage yet. Upload an image first.');
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const optimized = await reduceStoredImage(storagePath, getPortraitUrl(), {
+        maxDimension: 768,
+        mimeType: draft.encyclopediaPortraitMimeType || 'image/png',
+        currentWidth: draft.encyclopediaPortraitWidth,
+        currentHeight: draft.encyclopediaPortraitHeight,
+      });
+      setDraft((current) => ({
+        ...current,
+        encyclopediaPortraitUrl: optimized.imageUrl || current.encyclopediaPortraitUrl,
+        encyclopediaPortraitStoragePath: optimized.imageStoragePath || current.encyclopediaPortraitStoragePath,
+        encyclopediaPortraitMimeType: optimized.imageMimeType || current.encyclopediaPortraitMimeType,
+        encyclopediaPortraitWidth: optimized.imageWidth || current.encyclopediaPortraitWidth,
+        encyclopediaPortraitHeight: optimized.imageHeight || current.encyclopediaPortraitHeight,
+        encyclopediaPortraitVersion: optimized.imageVersion || current.encyclopediaPortraitVersion,
+      }));
+      const before = formatBytes(optimized.originalBytes);
+      const after = formatBytes(optimized.optimizedBytes);
+      setMessage(optimized.reduced
+        ? `Portrait reduced from ${before} to ${after}. Save the enemy to keep the new metadata.`
+        : `Portrait reprocessed (${before} -> ${after}). It may already be small.`);
+    } catch (exception) {
+      setError(exception.message || 'Image optimization failed.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   function buildSaveData() {
@@ -464,11 +524,7 @@ export default function EnemyAdminEditor({
               onClick={() => fileInputRef.current?.click()}
             >
               <img
-                src={
-                  draft.encyclopediaPortraitBase64
-                    ? `data:${draft.encyclopediaPortraitMimeType || 'image/png'};base64,${draft.encyclopediaPortraitBase64}`
-                    : enemy.imageUrl
-                }
+                src={getPortraitUrl()}
                 alt=""
               />
               <span>Edit image</span>
@@ -480,6 +536,15 @@ export default function EnemyAdminEditor({
               className={styles.fileInput}
               onChange={handleImageChange}
             />
+            <button
+              type="button"
+              className={styles.optimizeButton}
+              onClick={handleReduceImageSize}
+              disabled={saving || !draft.encyclopediaPortraitStoragePath}
+              title="Reduce the current Storage portrait while preserving transparency"
+            >
+              Reduce image size
+            </button>
           </div>
         )}
 
@@ -492,11 +557,7 @@ export default function EnemyAdminEditor({
                 onClick={() => fileInputRef.current?.click()}
               >
                 <img
-                  src={
-                    draft.encyclopediaPortraitBase64
-                      ? `data:${draft.encyclopediaPortraitMimeType || 'image/png'};base64,${draft.encyclopediaPortraitBase64}`
-                      : enemy.imageUrl
-                  }
+                  src={getPortraitUrl()}
                   alt=""
                 />
                 <span>Edit image</span>
@@ -508,6 +569,15 @@ export default function EnemyAdminEditor({
                 className={styles.fileInput}
                 onChange={handleImageChange}
               />
+              <button
+                type="button"
+                className={styles.optimizeButton}
+                onClick={handleReduceImageSize}
+                disabled={saving || !draft.encyclopediaPortraitStoragePath}
+                title="Reduce the current Storage portrait while preserving transparency"
+              >
+                Reduce image size
+              </button>
             </div>
 
             <label className={styles.field}>

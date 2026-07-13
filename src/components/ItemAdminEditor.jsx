@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import itemPlaceholder from '../assets/images/item-placeholder.svg';
 import { saveContentNode } from '../firebase/databaseService';
+import { formatBytes, reduceStoredImage, sanitizeStorageSegment, uploadEditorImage } from '../utils/storageImages';
 import GothicButton from './GothicButton';
 import styles from './ItemAdminEditor.module.css';
 
@@ -125,13 +126,10 @@ function toNumberOrBlank(value) {
   return Number.isNaN(parsed) ? value : parsed;
 }
 
-function stripDataUri(dataUrl) {
-  const [header, base64] = String(dataUrl).split(',');
-  const mimeType = header.match(/^data:(.+);base64$/)?.[1] || 'image/png';
-  return { base64, mimeType };
-}
-
 function getImageUrl(draft, fallback) {
+  if (draft.imageUrl || draft.image) {
+    return draft.imageUrl || draft.image;
+  }
   if (draft.imageBase64) {
     return String(draft.imageBase64).startsWith('data:')
       ? draft.imageBase64
@@ -161,16 +159,68 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const { base64, mimeType } = stripDataUri(reader.result);
+    setSaving(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const stableId = draft.itemId || draft[nameKey] || item.itemId || item.firebaseKey || item.id;
+      const upload = await uploadEditorImage(
+        file,
+        `game-assets/items/${sanitizeStorageSegment(stableId, 'item')}/icon`,
+      );
       setDraft((current) => ({
         ...current,
-        imageBase64: base64,
-        imageMimeType: mimeType,
+        ...upload,
+        imageBase64: null,
       }));
-    };
-    reader.readAsDataURL(file);
+      setMessage('Image uploaded. Save the item to keep this image URL in Firebase.');
+    } catch {
+      setError('Image upload failed. Check Firebase Storage rules for this admin account.');
+    } finally {
+      setSaving(false);
+      event.target.value = '';
+    }
+  }
+
+  async function handleReduceImageSize() {
+    const storagePath = draft.imageStoragePath;
+    if (!storagePath) {
+      setError('This image is not in Firebase Storage yet. Upload an image first.');
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const optimized = await reduceStoredImage(storagePath, getImageUrl(draft, item.imageUrl), {
+        maxDimension: 256,
+        mimeType: draft.imageMimeType || 'image/png',
+        currentWidth: draft.imageWidth,
+        currentHeight: draft.imageHeight,
+      });
+      setDraft((current) => ({
+        ...current,
+        imageUrl: optimized.imageUrl || current.imageUrl,
+        imageStoragePath: optimized.imageStoragePath || current.imageStoragePath,
+        imageMimeType: optimized.imageMimeType || current.imageMimeType,
+        imageWidth: optimized.imageWidth || current.imageWidth,
+        imageHeight: optimized.imageHeight || current.imageHeight,
+        imageVersion: optimized.imageVersion || current.imageVersion,
+        imageBase64: current.imageBase64,
+      }));
+      const before = formatBytes(optimized.originalBytes);
+      const after = formatBytes(optimized.optimizedBytes);
+      setMessage(optimized.reduced
+        ? `Image reduced from ${before} to ${after}. Save the item to keep the new metadata.`
+        : `Image reprocessed (${before} -> ${after}). It may already be small.`);
+    } catch (exception) {
+      setError(exception.message || 'Image optimization failed.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleSave() {
@@ -224,6 +274,15 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
             className={styles.fileInput}
             onChange={handleImageChange}
           />
+          <button
+            type="button"
+            className={styles.optimizeButton}
+            onClick={handleReduceImageSize}
+            disabled={saving || !draft.imageStoragePath}
+            title="Reduce the current Storage image while preserving transparency"
+          >
+            Reduce image size
+          </button>
         </div>
 
         <label className={styles.field}>

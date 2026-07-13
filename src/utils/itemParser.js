@@ -134,9 +134,9 @@ export function normalizeItemSettings(data) {
         typeLabel: formatEnum(source.itemType, ITEM_TYPE_LABELS) || 'Unknown',
         rarity: source.rarity,
         rarityLabel: formatEnum(source.rarity, RARITY_LABELS) || 'Common',
-        imageUrl: dataUriFromBase64(source.imageBase64, source.imageMimeType) ||
-          source.imageUrl ||
+        imageUrl: source.imageUrl ||
           source.image ||
+          dataUriFromBase64(source.imageBase64, source.imageMimeType) ||
           null,
         imageAssetPath: source.imageAssetPath || '',
         itemUsePrefabPath: source.itemUsePrefabPath || '',
