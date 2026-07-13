@@ -28,52 +28,87 @@ const RARITIES = [
   [5, 'Legendary'],
 ];
 
-const STAT_FIELDS = [
-  ['healthToGive', 'Healing'],
-  ['stamineToGive', 'Stamina'],
-  ['heartsToGive', 'Hearts Restored'],
-  ['strenghtToIncrease', 'Strength'],
-  ['heartsToIncrease', 'Hearts'],
-  ['healthToIncrease', 'Health'],
-  ['weaponDamageIncrease', 'Weapon Damage'],
-  ['subweaponDamageMult', 'Subweapon Damage'],
-  ['maxHealthToIncrease', 'Max Health'],
-  ['defToIncrease', 'Defense'],
-  ['stamineToIncrease', 'Max Stamina'],
-  ['temporaryAttackBonus', 'Timed Attack'],
-  ['temporaryDefenseBonus', 'Timed Defense'],
-  ['temporaryMaxStaminaBonus', 'Timed Max Stamina'],
-  ['temporaryMaxHealthBonus', 'Timed Max Health'],
-  ['temporaryMaxHeartsBonus', 'Timed Hearts'],
-  ['temporarySubweaponDamageMultiplierBonus', 'Timed Subweapon Mult'],
-  ['temporaryEffectDurationMinutes', 'Duration Minutes'],
-  ['bonusDamageToUndeadPercent', 'Damage to Undead %'],
-  ['bonusDamageToDemonPercent', 'Damage to Demon %'],
-  ['bonusDamageToBeastPercent', 'Damage to Beast %'],
-  ['bonusDamageToHumanPercent', 'Damage to Human %'],
-  ['bonusDamageToConstructPercent', 'Damage to Construct %'],
-  ['bonusDamageToSpiritPercent', 'Damage to Spirit %'],
-  ['bonusDamageToInsectPercent', 'Damage to Insect %'],
-  ['bonusDamageToPlantPercent', 'Damage to Plant %'],
-  ['bonusDamageToAquaticPercent', 'Damage to Aquatic %'],
-  ['bonusDamageToDragonPercent', 'Damage to Dragon %'],
-  ['bonusDamageToAberrationPercent', 'Damage to Aberration %'],
-  ['physicalDamage', 'Physical Damage'],
-  ['fireDamage', 'Fire Damage'],
-  ['iceDamage', 'Ice Damage'],
-  ['lightningDamage', 'Lightning Damage'],
-  ['poisonDamage', 'Poison Damage'],
-  ['holyDamage', 'Holy Damage'],
-  ['darkDamage', 'Dark Damage'],
-  ['arcaneDamage', 'Arcane Damage'],
-  ['physicalDefensePercent', 'Physical Defense %'],
-  ['fireDefensePercent', 'Fire Defense %'],
-  ['iceDefensePercent', 'Ice Defense %'],
-  ['lightningDefensePercent', 'Lightning Defense %'],
-  ['poisonDefensePercent', 'Poison Defense %'],
-  ['holyDefensePercent', 'Holy Defense %'],
-  ['darkDefensePercent', 'Dark Defense %'],
-  ['arcaneDefensePercent', 'Arcane Defense %'],
+const STAT_SECTIONS = [
+  {
+    title: 'Healing / Instant Use',
+    fields: [
+      ['healthToGive', 'Healing'],
+      ['stamineToGive', 'Stamina'],
+      ['heartsToGive', 'Hearts Restored'],
+    ],
+  },
+  {
+    title: 'Permanent Character Increases',
+    fields: [
+      ['strenghtToIncrease', 'Strength'],
+      ['heartsToIncrease', 'Hearts'],
+      ['healthToIncrease', 'Health'],
+      ['stamineToIncrease', 'Max Stamina'],
+    ],
+  },
+  {
+    title: 'Equipment Stats',
+    fields: [
+      ['weaponDamageIncrease', 'Weapon Damage'],
+      ['subweaponDamageMult', 'Subweapon Damage'],
+      ['maxHealthToIncrease', 'Max Health'],
+      ['defToIncrease', 'Defense'],
+    ],
+  },
+  {
+    title: 'Temporary Effects',
+    fields: [
+      ['temporaryEffectDurationMinutes', 'Duration Minutes'],
+      ['temporaryAttackBonus', 'Timed Attack'],
+      ['temporaryDefenseBonus', 'Timed Defense'],
+      ['temporaryMaxStaminaBonus', 'Timed Max Stamina'],
+      ['temporaryMaxHealthBonus', 'Timed Max Health'],
+      ['temporaryMaxHeartsBonus', 'Timed Hearts'],
+      ['temporarySubweaponDamageMultiplierBonus', 'Timed Subweapon Mult'],
+    ],
+  },
+  {
+    title: 'Enemy Family Damage Bonuses',
+    fields: [
+      ['bonusDamageToUndeadPercent', 'Damage to Undead %'],
+      ['bonusDamageToDemonPercent', 'Damage to Demon %'],
+      ['bonusDamageToBeastPercent', 'Damage to Beast %'],
+      ['bonusDamageToHumanPercent', 'Damage to Human %'],
+      ['bonusDamageToConstructPercent', 'Damage to Construct %'],
+      ['bonusDamageToSpiritPercent', 'Damage to Spirit %'],
+      ['bonusDamageToInsectPercent', 'Damage to Insect %'],
+      ['bonusDamageToPlantPercent', 'Damage to Plant %'],
+      ['bonusDamageToAquaticPercent', 'Damage to Aquatic %'],
+      ['bonusDamageToDragonPercent', 'Damage to Dragon %'],
+      ['bonusDamageToAberrationPercent', 'Damage to Aberration %'],
+    ],
+  },
+  {
+    title: 'Elemental Damage',
+    fields: [
+      ['physicalDamage', 'Physical Damage'],
+      ['fireDamage', 'Fire Damage'],
+      ['iceDamage', 'Ice Damage'],
+      ['lightningDamage', 'Lightning Damage'],
+      ['poisonDamage', 'Poison Damage'],
+      ['holyDamage', 'Holy Damage'],
+      ['darkDamage', 'Dark Damage'],
+      ['arcaneDamage', 'Arcane Damage'],
+    ],
+  },
+  {
+    title: 'Elemental / Physical Defense',
+    fields: [
+      ['physicalDefensePercent', 'Physical Defense %'],
+      ['fireDefensePercent', 'Fire Defense %'],
+      ['iceDefensePercent', 'Ice Defense %'],
+      ['lightningDefensePercent', 'Lightning Defense %'],
+      ['poisonDefensePercent', 'Poison Defense %'],
+      ['holyDefensePercent', 'Holy Defense %'],
+      ['darkDefensePercent', 'Dark Defense %'],
+      ['arcaneDefensePercent', 'Arcane Defense %'],
+    ],
+  },
 ];
 
 function clone(value) {
@@ -258,17 +293,24 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
 
         <div className={styles.full}>
           <h4 className={styles.subheading}>Stats</h4>
-          <div className={styles.statsGrid}>
-            {STAT_FIELDS.map(([key, label]) => (
-              <label key={key} className={styles.field}>
-                <span>{label}</span>
-                <input
-                  type="number"
-                  step="any"
-                  value={draft[key] ?? ''}
-                  onChange={(event) => setField(key, toNumberOrBlank(event.target.value))}
-                />
-              </label>
+          <div className={styles.statSections}>
+            {STAT_SECTIONS.map((section) => (
+              <section key={section.title} className={styles.statSection}>
+                <h5>{section.title}</h5>
+                <div className={styles.statsGrid}>
+                  {section.fields.map(([key, label]) => (
+                    <label key={key} className={styles.field}>
+                      <span>{label}</span>
+                      <input
+                        type="number"
+                        step="any"
+                        value={draft[key] ?? ''}
+                        onChange={(event) => setField(key, toNumberOrBlank(event.target.value))}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         </div>
