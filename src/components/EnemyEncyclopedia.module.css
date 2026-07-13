@@ -40,8 +40,14 @@
   color: var(--color-text-muted);
 }
 
-.search {
-  margin: 0.75rem;
+.filters {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem;
+}
+
+.search,
+.categorySelect {
   padding: 0.65rem 0.85rem;
   background: var(--color-bg-dark);
   border: 1px solid var(--color-border);
@@ -49,7 +55,8 @@
   color: var(--color-text);
 }
 
-.search:focus {
+.search:focus,
+.categorySelect:focus {
   outline: none;
   border-color: var(--color-red-bright);
   box-shadow: 0 0 0 2px var(--color-red-glow);

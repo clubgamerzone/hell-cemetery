@@ -6,12 +6,23 @@ import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import styles from './ItemsPage.module.css';
 
+function getItemCategory(item) {
+  return String(
+    item.raw?.category ||
+    item.raw?.itemCategory ||
+    item.raw?.type ||
+    item.typeLabel ||
+    'Uncategorized',
+  ).trim() || 'Uncategorized';
+}
+
 export default function ItemsPage() {
   const { isAdmin } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   async function loadItems() {
     setLoading(true);
@@ -32,17 +43,32 @@ export default function ItemsPage() {
 
   const visibleItems = useMemo(() => {
     const query = filter.trim().toLowerCase();
-    if (!query) return items;
-    return items.filter((item) => [
-      item.itemName,
-      item.itemId,
-      item.firebaseKey,
-      item.typeLabel,
-      item.rarityLabel,
-      item.raw?.category,
-      item.raw?.itemCategory,
-    ].some((value) => String(value || '').toLowerCase().includes(query)));
-  }, [items, filter]);
+    return items.filter((item) => {
+      const category = getItemCategory(item);
+      if (categoryFilter && category !== categoryFilter) return false;
+      if (!query) return true;
+      return [
+        item.itemName,
+        item.itemId,
+        item.firebaseKey,
+        item.typeLabel,
+        item.rarityLabel,
+        category,
+        item.raw?.category,
+        item.raw?.itemCategory,
+      ].some((value) => String(value || '').toLowerCase().includes(query));
+    });
+  }, [items, filter, categoryFilter]);
+
+  const categoryOptions = useMemo(() => {
+    const counts = new Map();
+    items.forEach((item) => {
+      const category = getItemCategory(item);
+      counts.set(category, (counts.get(category) || 0) + 1);
+    });
+    return Array.from(counts, ([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [items]);
 
   return (
     <div className="page page--wide">
@@ -55,13 +81,28 @@ export default function ItemsPage() {
         </p>
       </div>
 
-      <input
-        type="search"
-        className={styles.search}
-        placeholder="Search items by name, category, type, or rarity..."
-        value={filter}
-        onChange={(event) => setFilter(event.target.value)}
-      />
+      <div className={styles.filters}>
+        <input
+          type="search"
+          className={styles.search}
+          placeholder="Search items by name, category, type, or rarity..."
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+        />
+        <select
+          className={styles.categorySelect}
+          value={categoryFilter}
+          onChange={(event) => setCategoryFilter(event.target.value)}
+          aria-label="Filter items by category"
+        >
+          <option value="">All categories</option>
+          {categoryOptions.map((category) => (
+            <option key={category.value} value={category.value}>
+              {category.value} ({category.count})
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading && <LoadingSpinner message="Uncovering relics..." />}
       <ErrorMessage message={error} onRetry={loadItems} />

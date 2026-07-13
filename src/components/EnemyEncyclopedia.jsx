@@ -7,27 +7,37 @@ import styles from './EnemyEncyclopedia.module.css';
 export default function EnemyEncyclopedia({ enemies, showDebug = false, items = [], onSaved }) {
   const [selectedId, setSelectedId] = useState(enemies[0]?.id ?? null);
   const [filter, setFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   const groups = useMemo(() => groupEnemiesByCategory(enemies), [enemies]);
+  const categoryOptions = useMemo(
+    () => groups.map((group) => ({
+      value: group.category,
+      label: group.label,
+      count: group.enemies.length,
+    })),
+    [groups],
+  );
 
   const filteredGroups = useMemo(() => {
     const query = filter.trim().toLowerCase();
-    if (!query) return groups;
 
     return groups
+      .filter((group) => !categoryFilter || group.category === categoryFilter)
       .map((group) => ({
         ...group,
-        enemies: group.enemies.filter(
-          (enemy) =>
+        enemies: !query
+          ? group.enemies
+          : group.enemies.filter((enemy) =>
             enemy.name.toLowerCase().includes(query) ||
             enemy.categoryLabel.toLowerCase().includes(query) ||
             String(enemy.category || '').toLowerCase().includes(query) ||
             String(enemy.enemyFamily || '').toLowerCase().includes(query) ||
             String(enemy.attackElement || '').toLowerCase().includes(query),
-        ),
+          ),
       }))
       .filter((group) => group.enemies.length > 0);
-  }, [groups, filter]);
+  }, [groups, filter, categoryFilter]);
 
   const selectedEnemy =
     enemies.find((enemy) => enemy.id === selectedId) ||
@@ -43,14 +53,29 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
           <span className={styles.count}>{enemies.length} entries</span>
         </div>
 
-        <input
-          type="search"
-          className={styles.search}
-          placeholder="Search enemies..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          aria-label="Search enemies"
-        />
+        <div className={styles.filters}>
+          <input
+            type="search"
+            className={styles.search}
+            placeholder="Search enemies..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label="Search enemies"
+          />
+          <select
+            className={styles.categorySelect}
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+            aria-label="Filter enemies by category"
+          >
+            <option value="">All categories</option>
+            {categoryOptions.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label} ({category.count})
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className={styles.listScroll}>
           {filteredGroups.map((group) => (

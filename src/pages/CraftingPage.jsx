@@ -13,6 +13,17 @@ import CraftingRecipeAdminEditor from '../components/CraftingRecipeAdminEditor';
 import { useAuth } from '../context/AuthContext';
 import styles from './CraftingPage.module.css';
 
+function getRecipeCategory(recipe) {
+  return String(
+    recipe.raw?.category ||
+    recipe.raw?.recipeCategory ||
+    recipe.raw?.type ||
+    recipe.output?.itemType ||
+    recipe.output?.type ||
+    'Uncategorized',
+  ).trim() || 'Uncategorized';
+}
+
 function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
   const [isEditing, setIsEditing] = useState(false);
   const output = recipe.output;
@@ -110,6 +121,7 @@ export default function CraftingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   async function loadRecipes() {
     setLoading(true);
@@ -134,17 +146,32 @@ export default function CraftingPage() {
 
   const visibleRecipes = useMemo(() => {
     const query = filter.trim().toLowerCase();
-    if (!query) return recipes;
-    return recipes.filter((recipe) =>
-      recipe.displayName.toLowerCase().includes(query) ||
-      recipe.recipeId.toLowerCase().includes(query) ||
-      String(recipe.raw?.category || recipe.raw?.recipeCategory || recipe.raw?.type || '').toLowerCase().includes(query) ||
-      String(recipe.output?.itemName || recipe.output?.itemId || '').toLowerCase().includes(query) ||
-      recipe.ingredients.some((ingredient) =>
-        String(ingredient.itemName || ingredient.itemId || '').toLowerCase().includes(query),
-      ),
-    );
-  }, [recipes, filter]);
+    return recipes.filter((recipe) => {
+      const category = getRecipeCategory(recipe);
+      if (categoryFilter && category !== categoryFilter) return false;
+      if (!query) return true;
+      return (
+        recipe.displayName.toLowerCase().includes(query) ||
+        recipe.recipeId.toLowerCase().includes(query) ||
+        category.toLowerCase().includes(query) ||
+        String(recipe.raw?.category || recipe.raw?.recipeCategory || recipe.raw?.type || '').toLowerCase().includes(query) ||
+        String(recipe.output?.itemName || recipe.output?.itemId || '').toLowerCase().includes(query) ||
+        recipe.ingredients.some((ingredient) =>
+          String(ingredient.itemName || ingredient.itemId || '').toLowerCase().includes(query),
+        )
+      );
+    });
+  }, [recipes, filter, categoryFilter]);
+
+  const categoryOptions = useMemo(() => {
+    const counts = new Map();
+    recipes.forEach((recipe) => {
+      const category = getRecipeCategory(recipe);
+      counts.set(category, (counts.get(category) || 0) + 1);
+    });
+    return Array.from(counts, ([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [recipes]);
 
   return (
     <div className="page page--wide">
@@ -155,13 +182,28 @@ export default function CraftingPage() {
         </p>
       </div>
 
-      <input
-        type="search"
-        className={styles.search}
-        placeholder="Search recipes or ingredients..."
-        value={filter}
-        onChange={(event) => setFilter(event.target.value)}
-      />
+      <div className={styles.filters}>
+        <input
+          type="search"
+          className={styles.search}
+          placeholder="Search recipes or ingredients..."
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+        />
+        <select
+          className={styles.categorySelect}
+          value={categoryFilter}
+          onChange={(event) => setCategoryFilter(event.target.value)}
+          aria-label="Filter recipes by category"
+        >
+          <option value="">All categories</option>
+          {categoryOptions.map((category) => (
+            <option key={category.value} value={category.value}>
+              {category.value} ({category.count})
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading && <LoadingSpinner message="Loading crafting recipes..." />}
       <ErrorMessage message={error} onRetry={loadRecipes} />
