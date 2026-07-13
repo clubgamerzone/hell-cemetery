@@ -253,6 +253,17 @@ function getCategoryMovePath(enemy, category) {
   return `EnemySettings/Categories/${nextCategory}/${enemyKey}${suffix}`;
 }
 
+function getEnemyKeyFromWritePath(writePath) {
+  const match = String(writePath || '').match(/^EnemySettings\/Categories\/([^/]+)\/([^/]+)(\/enemyStats)?$/);
+  return match ? match[2] : null;
+}
+
+function buildEnemySelectionId(enemy, category) {
+  const enemyKey = getEnemyKeyFromWritePath(enemy.writePath);
+  if (!enemyKey) return enemy.id;
+  return `${category}_${enemyKey}`.replace(/\s+/g, '_');
+}
+
 function getPortraitDetailText(draft, imageInfo) {
   const size = imageInfo?.imageBytes ?? draft.encyclopediaPortraitBytes;
   const dimensions = draft.encyclopediaPortraitWidth && draft.encyclopediaPortraitHeight
@@ -544,7 +555,7 @@ export default function EnemyAdminEditor({
         await saveContentNode(enemy.writePath, next);
       }
       setMessage('Saved.');
-      onSaved?.();
+      onSaved?.(buildEnemySelectionId(enemy, category));
     } catch {
       setError('Save failed.');
     } finally {

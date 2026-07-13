@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import EnemyListItem from './EnemyListItem';
 import EnemyDetailPanel from './EnemyDetailPanel';
 import { groupEnemiesByCategory } from '../utils/enemyParser';
@@ -22,11 +22,24 @@ function getEnemyRarity(enemy) {
   return String(rarity).replace(/_/g, ' ');
 }
 
-export default function EnemyEncyclopedia({ enemies, showDebug = false, items = [], onSaved }) {
-  const [selectedId, setSelectedId] = useState(enemies[0]?.id ?? null);
+export default function EnemyEncyclopedia({
+  enemies,
+  showDebug = false,
+  items = [],
+  onSaved,
+  selectedId: controlledSelectedId,
+  onSelectedIdChange,
+}) {
+  const [localSelectedId, setLocalSelectedId] = useState(enemies[0]?.id ?? null);
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [rarityFilter, setRarityFilter] = useState('');
+  const selectedId = controlledSelectedId ?? localSelectedId;
+
+  function selectEnemy(id) {
+    setLocalSelectedId(id);
+    onSelectedIdChange?.(id);
+  }
 
   const groups = useMemo(() => groupEnemiesByCategory(enemies), [enemies]);
   const categoryOptions = useMemo(
@@ -76,6 +89,12 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
     filteredGroups[0]?.enemies[0] ||
     enemies[0] ||
     null;
+
+  useEffect(() => {
+    if (selectedEnemy && selectedEnemy.id !== selectedId) {
+      selectEnemy(selectedEnemy.id);
+    }
+  }, [selectedEnemy?.id, selectedId]);
 
   return (
     <div className={styles.encyclopedia}>
@@ -132,7 +151,7 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
                     key={enemy.id}
                     enemy={enemy}
                     isSelected={selectedEnemy?.id === enemy.id}
-                    onSelect={(entry) => setSelectedId(entry.id)}
+                    onSelect={(entry) => selectEnemy(entry.id)}
                   />
                 ))}
               </div>
@@ -151,7 +170,10 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
           enemies={enemies}
           showDebug={showDebug}
           items={items}
-          onSaved={onSaved}
+          onSaved={(savedEnemyId) => {
+            if (savedEnemyId) selectEnemy(savedEnemyId);
+            onSaved?.(savedEnemyId || selectedEnemy?.id);
+          }}
         />
       </div>
     </div>

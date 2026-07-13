@@ -15,10 +15,15 @@ export default function EnemiesPage() {
   const [enemies, setEnemies] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEnemyId, setSelectedEnemyId] = useState(null);
   const [error, setError] = useState('');
 
-  async function loadEnemies() {
-    setLoading(true);
+  async function loadEnemies(savedEnemyId = null) {
+    if (savedEnemyId) {
+      setSelectedEnemyId(savedEnemyId);
+    }
+
+    setLoading(enemies.length === 0);
     setError('');
     try {
       const data = await getEnemySettings();
@@ -57,7 +62,7 @@ export default function EnemiesPage() {
       )}
 
       {loading && <LoadingSpinner message="Summoning enemy data..." />}
-      <ErrorMessage message={error} onRetry={loadEnemies} />
+      <ErrorMessage message={error} onRetry={() => loadEnemies()} />
 
       {!loading && !error && enemies.length === 0 && (
         <div className="empty-state">
@@ -70,6 +75,8 @@ export default function EnemiesPage() {
           enemies={enemies}
           showDebug={isAdmin}
           items={items}
+          selectedId={selectedEnemyId}
+          onSelectedIdChange={setSelectedEnemyId}
           onSaved={loadEnemies}
         />
       )}
