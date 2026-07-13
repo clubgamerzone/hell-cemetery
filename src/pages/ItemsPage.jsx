@@ -16,6 +16,10 @@ function getItemCategory(item) {
   ).trim() || 'Uncategorized';
 }
 
+function getItemRarity(item) {
+  return String(item.rarityLabel || item.raw?.rarity || 'Unspecified').trim() || 'Unspecified';
+}
+
 export default function ItemsPage() {
   const { isAdmin } = useAuth();
   const [items, setItems] = useState([]);
@@ -23,6 +27,7 @@ export default function ItemsPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [rarityFilter, setRarityFilter] = useState('');
 
   async function loadItems() {
     setLoading(true);
@@ -45,26 +50,38 @@ export default function ItemsPage() {
     const query = filter.trim().toLowerCase();
     return items.filter((item) => {
       const category = getItemCategory(item);
+      const rarity = getItemRarity(item);
       if (categoryFilter && category !== categoryFilter) return false;
+      if (rarityFilter && rarity !== rarityFilter) return false;
       if (!query) return true;
       return [
         item.itemName,
         item.itemId,
         item.firebaseKey,
         item.typeLabel,
-        item.rarityLabel,
+        rarity,
         category,
         item.raw?.category,
         item.raw?.itemCategory,
       ].some((value) => String(value || '').toLowerCase().includes(query));
     });
-  }, [items, filter, categoryFilter]);
+  }, [items, filter, categoryFilter, rarityFilter]);
 
   const categoryOptions = useMemo(() => {
     const counts = new Map();
     items.forEach((item) => {
       const category = getItemCategory(item);
       counts.set(category, (counts.get(category) || 0) + 1);
+    });
+    return Array.from(counts, ([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [items]);
+
+  const rarityOptions = useMemo(() => {
+    const counts = new Map();
+    items.forEach((item) => {
+      const rarity = getItemRarity(item);
+      counts.set(rarity, (counts.get(rarity) || 0) + 1);
     });
     return Array.from(counts, ([value, count]) => ({ value, count }))
       .sort((a, b) => a.value.localeCompare(b.value));
@@ -99,6 +116,19 @@ export default function ItemsPage() {
           {categoryOptions.map((category) => (
             <option key={category.value} value={category.value}>
               {category.value} ({category.count})
+            </option>
+          ))}
+        </select>
+        <select
+          className={styles.categorySelect}
+          value={rarityFilter}
+          onChange={(event) => setRarityFilter(event.target.value)}
+          aria-label="Filter items by rarity"
+        >
+          <option value="">All rarities</option>
+          {rarityOptions.map((rarity) => (
+            <option key={rarity.value} value={rarity.value}>
+              {rarity.value} ({rarity.count})
             </option>
           ))}
         </select>

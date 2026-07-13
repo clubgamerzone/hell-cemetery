@@ -13,6 +13,23 @@ import CraftingRecipeAdminEditor from '../components/CraftingRecipeAdminEditor';
 import { useAuth } from '../context/AuthContext';
 import styles from './CraftingPage.module.css';
 
+const RARITY_LABELS = {
+  0: 'Common',
+  1: 'Normal',
+  2: 'Uncommon',
+  3: 'Rare',
+  4: 'Unique',
+  5: 'Legendary',
+};
+
+function formatRarity(value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (typeof value === 'number' || /^\d+$/.test(String(value))) {
+    return RARITY_LABELS[Number(value)] || String(value);
+  }
+  return String(value).replace(/_/g, ' ').trim();
+}
+
 function getRecipeCategory(recipe) {
   return String(
     recipe.raw?.category ||
@@ -22,6 +39,25 @@ function getRecipeCategory(recipe) {
     recipe.output?.type ||
     'Uncategorized',
   ).trim() || 'Uncategorized';
+}
+
+function getRecipeRarity(recipe, itemLookup) {
+  const directRarity = formatRarity(recipe.raw?.rarity ?? recipe.output?.rarity);
+  if (directRarity) return directRarity;
+
+  const outputKeys = [
+    recipe.output?.itemId,
+    recipe.output?.itemName,
+    recipe.raw?.outputItemId,
+    recipe.raw?.outputItemName,
+  ].filter(Boolean).map(String);
+
+  for (const key of outputKeys) {
+    const item = itemLookup.get(key);
+    if (item?.rarityLabel) return item.rarityLabel;
+  }
+
+  return 'Unspecified';
 }
 
 function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
@@ -122,6 +158,7 @@ export default function CraftingPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [rarityFilter, setRarityFilter] = useState('');
 
   async function loadRecipes() {
     setLoading(true);
@@ -129,10 +166,8 @@ export default function CraftingPage() {
     try {
       const data = await getCraftingSettings();
       setRecipes(normalizeCraftingSettings(data));
-      if (isAdmin) {
-        const itemData = await getItems();
-        setItems(normalizeItemSettings(itemData));
-      }
+      const itemData = await getItems();
+      setItems(normalizeItemSettings(itemData));
     } catch {
       setError('Failed to load crafting recipes. Please try again.');
     } finally {
@@ -144,16 +179,29 @@ export default function CraftingPage() {
     loadRecipes();
   }, [isAdmin]);
 
+  const itemLookup = useMemo(() => {
+    const lookup = new Map();
+    items.forEach((item) => {
+      [item.firebaseKey, item.itemId, item.itemName].filter(Boolean).forEach((key) => {
+        lookup.set(String(key), item);
+      });
+    });
+    return lookup;
+  }, [items]);
+
   const visibleRecipes = useMemo(() => {
     const query = filter.trim().toLowerCase();
     return recipes.filter((recipe) => {
       const category = getRecipeCategory(recipe);
+      const rarity = getRecipeRarity(recipe, itemLookup);
       if (categoryFilter && category !== categoryFilter) return false;
+      if (rarityFilter && rarity !== rarityFilter) return false;
       if (!query) return true;
       return (
         recipe.displayName.toLowerCase().includes(query) ||
         recipe.recipeId.toLowerCase().includes(query) ||
         category.toLowerCase().includes(query) ||
+        rarity.toLowerCase().includes(query) ||
         String(recipe.raw?.category || recipe.raw?.recipeCategory || recipe.raw?.type || '').toLowerCase().includes(query) ||
         String(recipe.output?.itemName || recipe.output?.itemId || '').toLowerCase().includes(query) ||
         recipe.ingredients.some((ingredient) =>
@@ -161,7 +209,7 @@ export default function CraftingPage() {
         )
       );
     });
-  }, [recipes, filter, categoryFilter]);
+  }, [recipes, filter, categoryFilter, rarityFilter, itemLookup]);
 
   const categoryOptions = useMemo(() => {
     const counts = new Map();
@@ -172,6 +220,16 @@ export default function CraftingPage() {
     return Array.from(counts, ([value, count]) => ({ value, count }))
       .sort((a, b) => a.value.localeCompare(b.value));
   }, [recipes]);
+
+  const rarityOptions = useMemo(() => {
+    const counts = new Map();
+    recipes.forEach((recipe) => {
+      const rarity = getRecipeRarity(recipe, itemLookup);
+      counts.set(rarity, (counts.get(rarity) || 0) + 1);
+    });
+    return Array.from(counts, ([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [recipes, itemLookup]);
 
   return (
     <div className="page page--wide">
@@ -200,6 +258,19 @@ export default function CraftingPage() {
           {categoryOptions.map((category) => (
             <option key={category.value} value={category.value}>
               {category.value} ({category.count})
+            </option>
+          ))}
+        </select>
+        <select
+          className={styles.categorySelect}
+          value={rarityFilter}
+          onChange={(event) => setRarityFilter(event.target.value)}
+          aria-label="Filter recipes by rarity"
+        >
+          <option value="">All rarities</option>
+          {rarityOptions.map((rarity) => (
+            <option key={rarity.value} value={rarity.value}>
+              {rarity.value} ({rarity.count})
             </option>
           ))}
         </select>

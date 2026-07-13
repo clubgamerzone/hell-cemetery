@@ -4,10 +4,29 @@ import EnemyDetailPanel from './EnemyDetailPanel';
 import { groupEnemiesByCategory } from '../utils/enemyParser';
 import styles from './EnemyEncyclopedia.module.css';
 
+const RARITY_LABELS = {
+  0: 'Common',
+  1: 'Normal',
+  2: 'Uncommon',
+  3: 'Rare',
+  4: 'Unique',
+  5: 'Legendary',
+};
+
+function getEnemyRarity(enemy) {
+  const rarity = enemy.rarity ?? enemy.raw?.rarity;
+  if (rarity === null || rarity === undefined || rarity === '') return 'Unspecified';
+  if (typeof rarity === 'number' || /^\d+$/.test(String(rarity))) {
+    return RARITY_LABELS[Number(rarity)] || String(rarity);
+  }
+  return String(rarity).replace(/_/g, ' ');
+}
+
 export default function EnemyEncyclopedia({ enemies, showDebug = false, items = [], onSaved }) {
   const [selectedId, setSelectedId] = useState(enemies[0]?.id ?? null);
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [rarityFilter, setRarityFilter] = useState('');
 
   const groups = useMemo(() => groupEnemiesByCategory(enemies), [enemies]);
   const categoryOptions = useMemo(
@@ -18,6 +37,15 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
     })),
     [groups],
   );
+  const rarityOptions = useMemo(() => {
+    const counts = new Map();
+    enemies.forEach((enemy) => {
+      const rarity = getEnemyRarity(enemy);
+      counts.set(rarity, (counts.get(rarity) || 0) + 1);
+    });
+    return Array.from(counts, ([value, count]) => ({ value, count }))
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [enemies]);
 
   const filteredGroups = useMemo(() => {
     const query = filter.trim().toLowerCase();
@@ -27,17 +55,21 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
       .map((group) => ({
         ...group,
         enemies: !query
-          ? group.enemies
+          ? group.enemies.filter((enemy) => !rarityFilter || getEnemyRarity(enemy) === rarityFilter)
           : group.enemies.filter((enemy) =>
-            enemy.name.toLowerCase().includes(query) ||
-            enemy.categoryLabel.toLowerCase().includes(query) ||
-            String(enemy.category || '').toLowerCase().includes(query) ||
-            String(enemy.enemyFamily || '').toLowerCase().includes(query) ||
-            String(enemy.attackElement || '').toLowerCase().includes(query),
+            (!rarityFilter || getEnemyRarity(enemy) === rarityFilter) &&
+            (
+              enemy.name.toLowerCase().includes(query) ||
+              enemy.categoryLabel.toLowerCase().includes(query) ||
+              String(enemy.category || '').toLowerCase().includes(query) ||
+              getEnemyRarity(enemy).toLowerCase().includes(query) ||
+              String(enemy.enemyFamily || '').toLowerCase().includes(query) ||
+              String(enemy.attackElement || '').toLowerCase().includes(query)
+            ),
           ),
       }))
       .filter((group) => group.enemies.length > 0);
-  }, [groups, filter, categoryFilter]);
+  }, [groups, filter, categoryFilter, rarityFilter]);
 
   const selectedEnemy =
     enemies.find((enemy) => enemy.id === selectedId) ||
@@ -72,6 +104,19 @@ export default function EnemyEncyclopedia({ enemies, showDebug = false, items = 
             {categoryOptions.map((category) => (
               <option key={category.value} value={category.value}>
                 {category.label} ({category.count})
+              </option>
+            ))}
+          </select>
+          <select
+            className={styles.categorySelect}
+            value={rarityFilter}
+            onChange={(event) => setRarityFilter(event.target.value)}
+            aria-label="Filter enemies by rarity"
+          >
+            <option value="">All rarities</option>
+            {rarityOptions.map((rarity) => (
+              <option key={rarity.value} value={rarity.value}>
+                {rarity.value} ({rarity.count})
               </option>
             ))}
           </select>
