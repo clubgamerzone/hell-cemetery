@@ -149,6 +149,18 @@ function getImageDetailText(draft, imageInfo) {
     .join(' | ');
 }
 
+function stripImageExtension(storagePath) {
+  return String(storagePath || '').replace(/\.[^/.]+$/, '');
+}
+
+function getItemImageStorageBasePath(item, draft, nameKey) {
+  const existingPath = stripImageExtension(draft.imageStoragePath || item.raw?.imageStoragePath);
+  if (existingPath) return existingPath;
+
+  const stableId = item.firebaseKey || item.id || draft.firebaseKey || draft.itemId || draft[nameKey] || item.itemId || item.itemName;
+  return `game-assets/items/${sanitizeStorageSegment(stableId, 'item')}/icon`;
+}
+
 export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader = false }) {
   const fileInputRef = useRef(null);
   const [draft, setDraft] = useState(() => clone(item.raw));
@@ -200,10 +212,9 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
     setMessage('');
 
     try {
-      const stableId = draft.itemId || draft[nameKey] || item.itemId || item.firebaseKey || item.id;
       const upload = await uploadEditorImage(
         file,
-        `game-assets/items/${sanitizeStorageSegment(stableId, 'item')}/icon`,
+        getItemImageStorageBasePath(item, draft, nameKey),
       );
       setDraft((current) => ({
         ...current,
