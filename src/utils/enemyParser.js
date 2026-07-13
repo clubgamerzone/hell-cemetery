@@ -96,21 +96,21 @@ function extractStat(stats, statName) {
 
 function normalizeLootDrops(stats) {
   const tieredDrops = [
-    ...(Array.isArray(stats.commonDrops) ? stats.commonDrops : []),
-    ...(Array.isArray(stats.normalDrops) ? stats.normalDrops : []),
-    ...(Array.isArray(stats.uncommonDrops) ? stats.uncommonDrops : []),
-    ...(Array.isArray(stats.rareDrops) ? stats.rareDrops : []),
-    ...(Array.isArray(stats.veryRareDrops) ? stats.veryRareDrops : []),
-    ...(Array.isArray(stats.legendaryDrops) ? stats.legendaryDrops : []),
+    ...(Array.isArray(stats.commonDrops) ? stats.commonDrops.slice(0, 1).map((drop) => ({ slotKey: 'commonDrops', drop })) : []),
+    ...(Array.isArray(stats.normalDrops) ? stats.normalDrops.slice(0, 1).map((drop) => ({ slotKey: 'normalDrops', drop })) : []),
+    ...(Array.isArray(stats.legendaryDrops) ? stats.legendaryDrops.slice(0, 1).map((drop) => ({ slotKey: 'legendaryDrops', drop })) : []),
   ];
   const legacyDrops = stats.lootDrops || stats.drops || stats.Drops || stats.rewards || [];
-  const drops = tieredDrops.length > 0 ? tieredDrops : legacyDrops;
+  const drops = tieredDrops.length > 0
+    ? tieredDrops
+    : legacyDrops.map((drop, index) => ({ slotKey: `legacy-${index}`, drop }));
   if (!Array.isArray(drops)) return [];
 
-  return drops.map((drop, index) => {
+  return drops.map(({ slotKey, drop }, index) => {
     if (!isPlainObject(drop)) {
       return {
         id: String(index),
+        slotKey,
         itemName: String(drop),
         dropChance: null,
         isGuaranteed: false,
@@ -123,6 +123,7 @@ function normalizeLootDrops(stats) {
 
     return {
       id: String(drop.itemId ?? drop.itemID ?? drop.id ?? index),
+      slotKey,
       itemName: drop.itemName || drop.name || drop.Name || `Item ${index + 1}`,
       dropTier: drop.dropTier || drop.tier || null,
       dropChance: drop.dropChance ?? drop.chance ?? null,

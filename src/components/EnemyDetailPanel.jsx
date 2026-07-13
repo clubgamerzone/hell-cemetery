@@ -53,15 +53,8 @@ function LootDropItem({ drop }) {
 
 function getDropArrays(enemyData) {
   return [
-    enemyData.lootDrops,
-    enemyData.drops,
-    enemyData.Drops,
-    enemyData.rewards,
     enemyData.commonDrops,
     enemyData.normalDrops,
-    enemyData.uncommonDrops,
-    enemyData.rareDrops,
-    enemyData.veryRareDrops,
     enemyData.legendaryDrops,
   ].filter(Array.isArray);
 }
@@ -249,8 +242,11 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
           <SectionHeader title="Loot Drops" editable={showDebug} onEdit={() => setEditorSection('loot')} />
           {enemy.lootDrops.length > 0 ? (
             <ul className={styles.lootList}>
-              {enemy.lootDrops.map((drop) => (
-                <LootDropItem key={`${drop.id}-${drop.itemName}`} drop={drop} />
+              {enemy.lootDrops.map((drop, index) => (
+                <LootDropItem
+                  key={`${drop.slotKey || index}-${drop.id || drop.itemID || drop.itemId || index}-${drop.itemName || index}`}
+                  drop={drop}
+                />
               ))}
             </ul>
           ) : (

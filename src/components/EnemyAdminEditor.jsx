@@ -68,16 +68,21 @@ const RESISTANCE_FIELDS = [
   ['arcaneDamageTakenPercent', 'Arcane'],
 ];
 
-const DROP_KEYS = [
+const ACTIVE_DROP_KEYS = [
   'commonDrops',
   'normalDrops',
+  'legendaryDrops',
+];
+
+const LEGACY_DROP_KEYS = [
   'uncommonDrops',
   'rareDrops',
   'veryRareDrops',
-  'legendaryDrops',
   'lootDrops',
   'drops',
 ];
+
+const DROP_KEYS = [...ACTIVE_DROP_KEYS, ...LEGACY_DROP_KEYS];
 
 const DROP_LIST_LABELS = {
   commonDrops: 'Common drops',
@@ -105,7 +110,7 @@ function getNumber(data, keys) {
 }
 
 function getDropKey(data) {
-  return DROP_KEYS.find((key) => Array.isArray(data[key])) || 'lootDrops';
+  return ACTIVE_DROP_KEYS.find((key) => Array.isArray(data[key])) || 'commonDrops';
 }
 
 function getItemAliases(item) {
@@ -167,9 +172,9 @@ function normalizeDrop(drop, sourceKey, itemOptions) {
 }
 
 function normalizeDrops(data, itemOptions = []) {
-  const drops = DROP_KEYS.flatMap((key) => {
+  const drops = ACTIVE_DROP_KEYS.flatMap((key) => {
     const list = Array.isArray(data[key]) ? data[key] : [];
-    return list.map((drop) => normalizeDrop(drop, key, itemOptions));
+    return list.slice(0, 1).map((drop) => normalizeDrop(drop, key, itemOptions));
   });
 
   if (drops.length > 0) return drops;
@@ -397,8 +402,13 @@ export default function EnemyAdminEditor({
   }
 
   function addDrop() {
+    if (drops.length >= ACTIVE_DROP_KEYS.length) {
+      return;
+    }
+
     const firstItem = itemOptions[0];
-    const defaultSourceKey = getDropKey(draft);
+    const usedKeys = new Set(drops.map((drop) => drop.sourceKey).filter(Boolean));
+    const defaultSourceKey = ACTIVE_DROP_KEYS.find((key) => !usedKeys.has(key)) || 'commonDrops';
     setDrops((current) => [
       ...current,
       {
@@ -521,8 +531,16 @@ export default function EnemyAdminEditor({
       next[key] = [];
     });
 
+    ACTIVE_DROP_KEYS.forEach((key) => {
+      next[key] = [];
+    });
+
+    const usedKeys = new Set();
     drops.forEach((drop) => {
-      const key = drop.sourceKey || getDropKey(next);
+      const requestedKey = drop.sourceKey || getDropKey(next);
+      const key = ACTIVE_DROP_KEYS.includes(requestedKey) ? requestedKey : 'commonDrops';
+      if (usedKeys.has(key)) return;
+      usedKeys.add(key);
       next[key] = [...(Array.isArray(next[key]) ? next[key] : []), buildDropSaveData(drop)];
     });
     return next;
@@ -841,7 +859,9 @@ export default function EnemyAdminEditor({
           <div className={styles.full}>
             <div className={styles.sectionHeader}>
               <h4>Loot Drops</h4>
-              <GothicButton type="button" size="small" onClick={addDrop}>Add Drop</GothicButton>
+              <GothicButton type="button" size="small" onClick={addDrop} disabled={drops.length >= ACTIVE_DROP_KEYS.length}>
+                Add Drop
+              </GothicButton>
             </div>
             <div className={styles.dropList}>
               {drops.map((drop, index) => (
@@ -852,7 +872,7 @@ export default function EnemyAdminEditor({
                       value={drop.sourceKey || getDropKey(draft)}
                       onChange={(event) => setDrop(index, { sourceKey: event.target.value })}
                     >
-                      {DROP_KEYS.map((key) => (
+                      {ACTIVE_DROP_KEYS.map((key) => (
                         <option key={key} value={key}>{DROP_LIST_LABELS[key]}</option>
                       ))}
                     </select>

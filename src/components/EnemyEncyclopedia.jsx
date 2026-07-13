@@ -166,6 +166,7 @@ export default function EnemyEncyclopedia({
 
       <div className={styles.detail}>
         <EnemyDetailPanel
+          key={selectedEnemy?.id || 'empty-enemy'}
           enemy={selectedEnemy}
           enemies={enemies}
           showDebug={showDebug}
