@@ -19,7 +19,7 @@ function getRarityClass(rarity) {
   return styles['rarity--common'];
 }
 
-export default function ItemCard({ item, showDebug = false, onSaved }) {
+export default function ItemCard({ item, showDebug = false, onSaved, highlighted = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const name = item.itemName || item.id || 'Unknown Item';
   const description = item.description;
@@ -30,7 +30,7 @@ export default function ItemCard({ item, showDebug = false, onSaved }) {
 
   return (
     <>
-      <article className={styles.card}>
+      <article className={`${styles.card} ${highlighted ? styles.cardHighlighted : ''}`}>
         <div className={styles.card__imageWrap}>
           <img
             src={imageUrl || itemPlaceholder}

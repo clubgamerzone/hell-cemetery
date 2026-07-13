@@ -1,5 +1,6 @@
 import enemyPlaceholder from '../assets/images/enemy-placeholder.svg';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import CollapsibleJson from './CollapsibleJson';
 import AdminJsonEditor from './AdminJsonEditor';
 import EnemyAdminEditor from './EnemyAdminEditor';
@@ -25,10 +26,17 @@ function StatRow({ label, value }) {
 
 function LootDropItem({ drop }) {
   const chance = formatDropChance(drop.dropChance);
+  const itemQuery = drop.itemName || drop.itemId || drop.itemID || drop.id;
 
   return (
     <li className={styles.lootItem}>
-      <span className={styles.lootName}>{drop.itemName}</span>
+      {itemQuery ? (
+        <Link className={styles.lootName} to={`/items?item=${encodeURIComponent(itemQuery)}`}>
+          {drop.itemName || itemQuery}
+        </Link>
+      ) : (
+        <span className={styles.lootName}>{drop.itemName}</span>
+      )}
       <span className={styles.lootMeta}>
         {drop.isGuaranteed && <span className={styles.lootTag}>Guaranteed</span>}
         {drop.dropTier && <span className={styles.lootTag}>{drop.dropTier}</span>}

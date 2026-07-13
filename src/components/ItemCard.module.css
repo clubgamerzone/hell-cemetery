@@ -14,6 +14,11 @@
   transform: translateY(-4px);
 }
 
+.cardHighlighted {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 24px rgba(201, 162, 39, 0.35), var(--shadow-card);
+}
+
 .card__imageWrap {
   position: relative;
   aspect-ratio: 1;

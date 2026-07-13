@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getItems, normalizeItemSettings } from '../firebase/databaseService';
 import ItemCard from '../components/ItemCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -20,14 +21,30 @@ function getItemRarity(item) {
   return String(item.rarityLabel || item.raw?.rarity || 'Unspecified').trim() || 'Unspecified';
 }
 
+function itemMatchesQuery(item, query) {
+  const normalizedQuery = String(query || '').trim().toLowerCase();
+  if (!normalizedQuery) return false;
+  return [
+    item.itemName,
+    item.itemId,
+    item.firebaseKey,
+    item.raw?.itemId,
+    item.raw?.itemName,
+    item.raw?.name,
+    item.raw?.legacyId,
+  ].some((value) => String(value || '').trim().toLowerCase() === normalizedQuery);
+}
+
 export default function ItemsPage() {
   const { isAdmin } = useAuth();
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [rarityFilter, setRarityFilter] = useState('');
+  const selectedItemQuery = searchParams.get('item') || '';
 
   async function loadItems() {
     setLoading(true);
@@ -51,6 +68,7 @@ export default function ItemsPage() {
     return items.filter((item) => {
       const category = getItemCategory(item);
       const rarity = getItemRarity(item);
+      if (selectedItemQuery && !itemMatchesQuery(item, selectedItemQuery)) return false;
       if (categoryFilter && category !== categoryFilter) return false;
       if (rarityFilter && rarity !== rarityFilter) return false;
       if (!query) return true;
@@ -65,7 +83,7 @@ export default function ItemsPage() {
         item.raw?.itemCategory,
       ].some((value) => String(value || '').toLowerCase().includes(query));
     });
-  }, [items, filter, categoryFilter, rarityFilter]);
+  }, [items, filter, categoryFilter, rarityFilter, selectedItemQuery]);
 
   const categoryOptions = useMemo(() => {
     const counts = new Map();
@@ -144,11 +162,19 @@ export default function ItemsPage() {
       {!loading && !error && items.length > 0 && (
         <>
           <div className="notice notice--info" style={{ marginBottom: '1.25rem' }}>
-            Showing {visibleItems.length} of {items.length} items.
+            {selectedItemQuery
+              ? `Showing item match for "${selectedItemQuery}".`
+              : `Showing ${visibleItems.length} of ${items.length} items.`}
           </div>
           <div className="grid grid--items">
             {visibleItems.map((item) => (
-            <ItemCard key={item.id} item={item} showDebug={isAdmin} onSaved={loadItems} />
+              <ItemCard
+                key={item.id}
+                item={item}
+                showDebug={isAdmin}
+                onSaved={loadItems}
+                highlighted={selectedItemQuery && itemMatchesQuery(item, selectedItemQuery)}
+              />
             ))}
           </div>
         </>

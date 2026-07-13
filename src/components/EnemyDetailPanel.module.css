@@ -296,6 +296,13 @@ button.portraitFrame:disabled {
   font-size: 0.85rem;
   letter-spacing: 0.04em;
   color: var(--color-gold);
+  text-decoration: none;
+}
+
+a.lootName:hover {
+  color: var(--color-red-bright);
+  text-decoration: underline;
+  text-underline-offset: 0.18rem;
 }
 
 .lootMeta {
