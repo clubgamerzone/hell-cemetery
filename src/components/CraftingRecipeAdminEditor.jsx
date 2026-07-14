@@ -4,6 +4,15 @@ import GothicButton from './GothicButton';
 import itemPlaceholder from '../assets/images/item-placeholder.svg';
 import styles from './CraftingRecipeAdminEditor.module.css';
 
+const RARITIES = [
+  [0, 'Common'],
+  [1, 'Normal'],
+  [2, 'Uncommon'],
+  [3, 'Rare'],
+  [4, 'Unique'],
+  [5, 'Legendary'],
+];
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value ?? {}));
 }
@@ -172,7 +181,13 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
       const writePath = recipe.isNew ? `CraftingSettings/recipes/${recipeId}` : recipe.writePath;
       await saveContentNode(writePath, nextDraft);
       setMessage('Saved.');
-      onSaved?.();
+      onSaved?.({
+        data: nextDraft,
+        recipeId,
+        writePath,
+        previousId: recipe.id,
+        isNew: recipe.isNew,
+      });
     } catch {
       setError('Save failed.');
     } finally {
@@ -206,6 +221,28 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
             value={draft.recipeId || ''}
             onChange={(event) => setField('recipeId', event.target.value)}
           />
+        </label>
+
+        <label className={styles.field}>
+          <span>Category</span>
+          <input
+            value={draft.category || ''}
+            placeholder="Use output item type"
+            onChange={(event) => setField('category', event.target.value)}
+          />
+        </label>
+
+        <label className={styles.field}>
+          <span>Rarity</span>
+          <select
+            value={draft.rarity ?? ''}
+            onChange={(event) => setField('rarity', toNumberOrBlank(event.target.value))}
+          >
+            <option value="">Use output item rarity</option>
+            {RARITIES.map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </label>
 
         <label className={styles.checkbox}>

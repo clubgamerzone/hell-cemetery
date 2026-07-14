@@ -204,8 +204,17 @@ function RecipeCard({ recipe, recipes = [], showDebug = false, items = [], itemL
 
     setIsToggling(true);
     try {
-      await saveContentNode(`${recipe.writePath}/enabled`, recipe.enabled === false);
-      onSaved?.();
+      const enabled = recipe.enabled === false;
+      await saveContentNode(`${recipe.writePath}/enabled`, enabled);
+      onSaved?.({
+        data: {
+          ...recipe.raw,
+          enabled,
+        },
+        recipeId: recipe.recipeId || recipe.id,
+        writePath: recipe.writePath,
+        previousId: recipe.id,
+      });
     } finally {
       setIsToggling(false);
     }
@@ -333,6 +342,37 @@ export default function CraftingPage() {
   useEffect(() => {
     loadRecipes();
   }, [isAdmin]);
+
+  function sortRecipes(a, b) {
+    return String(a.displayName || a.recipeId || a.id || '')
+      .localeCompare(String(b.displayName || b.recipeId || b.id || ''));
+  }
+
+  function handleRecipeSaved(savedRecipe) {
+    if (!savedRecipe?.data) {
+      loadRecipes();
+      return;
+    }
+
+    const recipeId = savedRecipe.recipeId || savedRecipe.data.recipeId || savedRecipe.previousId;
+    const normalized = normalizeCraftingSettings({ recipes: { [recipeId]: savedRecipe.data } })[0];
+    if (!normalized) {
+      loadRecipes();
+      return;
+    }
+
+    const nextRecipe = {
+      ...normalized,
+      writePath: savedRecipe.writePath || normalized.writePath,
+    };
+    setRecipes((current) => {
+      const nextRecipes = current.filter((recipe) =>
+        recipe.id !== savedRecipe.previousId &&
+        recipe.id !== nextRecipe.id &&
+        recipe.writePath !== nextRecipe.writePath);
+      return [...nextRecipes, nextRecipe].sort(sortRecipes);
+    });
+  }
 
   const itemLookup = useMemo(() => {
     const lookup = new Map();
@@ -477,7 +517,7 @@ export default function CraftingPage() {
                 showDebug={isAdmin}
                 items={items}
                 itemLookup={itemLookup}
-                onSaved={loadRecipes}
+                onSaved={handleRecipeSaved}
                 t={t}
               />
             ))}
@@ -491,9 +531,9 @@ export default function CraftingPage() {
           items={items}
           validate={validateRecipe}
           onClose={() => setIsCreating(false)}
-          onSaved={() => {
+          onSaved={(savedRecipe) => {
             setIsCreating(false);
-            loadRecipes();
+            handleRecipeSaved(savedRecipe);
           }}
         />
       )}

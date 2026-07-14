@@ -11,6 +11,12 @@ import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
+function sortEnemies(a, b) {
+  const categoryCompare = String(a.category || '').localeCompare(String(b.category || ''));
+  if (categoryCompare !== 0) return categoryCompare;
+  return String(a.name || a.id || '').localeCompare(String(b.name || b.id || ''));
+}
+
 export default function EnemiesPage() {
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -45,6 +51,45 @@ export default function EnemiesPage() {
     loadEnemies();
   }, [isAdmin]);
 
+  function handleEnemySaved(savedEnemy) {
+    if (typeof savedEnemy === 'string') {
+      setSelectedEnemyId(savedEnemy);
+      return;
+    }
+
+    if (!savedEnemy?.data || !savedEnemy.category || !savedEnemy.enemyKey) {
+      loadEnemies(savedEnemy?.selectedId || null);
+      return;
+    }
+
+    const normalized = normalizeEnemies({
+      Categories: {
+        [savedEnemy.category]: {
+          [savedEnemy.enemyKey]: savedEnemy.data,
+        },
+      },
+    })[0];
+
+    if (!normalized) {
+      loadEnemies(savedEnemy.selectedId || null);
+      return;
+    }
+
+    const nextEnemy = {
+      ...normalized,
+      writePath: savedEnemy.writePath || normalized.writePath,
+    };
+    const nextSelectedId = savedEnemy.selectedId || nextEnemy.id;
+    setSelectedEnemyId(nextSelectedId);
+    setEnemies((current) => {
+      const removeIds = new Set([savedEnemy.previousId, nextEnemy.id].filter(Boolean));
+      const nextEnemies = current.filter((enemy) =>
+        !removeIds.has(enemy.id) &&
+        enemy.writePath !== savedEnemy.writePath);
+      return [...nextEnemies, nextEnemy].sort(sortEnemies);
+    });
+  }
+
   const categoryCount = new Set(enemies.map((enemy) => enemy.category)).size;
 
   return (
@@ -74,7 +119,7 @@ export default function EnemiesPage() {
           items={items}
           selectedId={selectedEnemyId}
           onSelectedIdChange={setSelectedEnemyId}
-          onSaved={loadEnemies}
+          onSaved={handleEnemySaved}
         />
       )}
     </div>

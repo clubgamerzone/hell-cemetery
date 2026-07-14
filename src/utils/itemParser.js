@@ -29,6 +29,7 @@ const STAT_DEFINITIONS = [
   ['healthToGive', 'Healing'],
   ['stamineToGive', 'Stamina'],
   ['heartsToGive', 'Hearts Restored'],
+  ['defenseToGive', 'Instant Defense'],
   ['strenghtToIncrease', 'Strength'],
   ['heartsToIncrease', 'Hearts'],
   ['healthToIncrease', 'Health'],

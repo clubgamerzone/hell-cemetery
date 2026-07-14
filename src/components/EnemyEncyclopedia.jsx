@@ -171,9 +171,12 @@ export default function EnemyEncyclopedia({
           enemies={enemies}
           showDebug={showDebug}
           items={items}
-          onSaved={(savedEnemyId) => {
+          onSaved={(savedEnemy) => {
+            const savedEnemyId = typeof savedEnemy === 'string'
+              ? savedEnemy
+              : savedEnemy?.selectedId;
             if (savedEnemyId) selectEnemy(savedEnemyId);
-            onSaved?.(savedEnemyId || selectedEnemy?.id);
+            onSaved?.(savedEnemy || savedEnemyId || selectedEnemy?.id);
           }}
         />
       </div>

@@ -573,7 +573,16 @@ export default function EnemyAdminEditor({
         await saveContentNode(enemy.writePath, next);
       }
       setMessage('Saved.');
-      onSaved?.(buildEnemySelectionId(enemy, category));
+      const writePath = movePath || enemy.writePath;
+      const enemyKey = getEnemyKeyFromWritePath(writePath) || getEnemyKeyFromWritePath(enemy.writePath);
+      onSaved?.({
+        data: next,
+        category,
+        enemyKey,
+        writePath,
+        previousId: enemy.id,
+        selectedId: buildEnemySelectionId(enemy, category),
+      });
     } catch {
       setError('Save failed.');
     } finally {

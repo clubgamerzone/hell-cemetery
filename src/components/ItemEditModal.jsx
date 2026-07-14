@@ -47,7 +47,11 @@ export default function ItemEditModal({ item, onClose, onSaved }) {
             title="Advanced Item JSON"
             path={item.writePath}
             value={item.raw}
-            onSaved={onSaved}
+            onSaved={(savedData) => onSaved?.({
+              data: savedData,
+              firebaseKey: item.firebaseKey || item.id || savedData?.itemId || savedData?.itemName,
+              writePath: item.writePath,
+            })}
           />
         </div>
       </section>

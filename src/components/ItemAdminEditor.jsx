@@ -36,6 +36,7 @@ const STAT_SECTIONS = [
       ['healthToGive', 'Healing'],
       ['stamineToGive', 'Stamina'],
       ['heartsToGive', 'Hearts Restored'],
+      ['defenseToGive', 'Instant Defense'],
     ],
   },
   {
@@ -44,15 +45,15 @@ const STAT_SECTIONS = [
       ['strenghtToIncrease', 'Strength'],
       ['heartsToIncrease', 'Hearts'],
       ['healthToIncrease', 'Health'],
-      ['stamineToIncrease', 'Max Stamina'],
     ],
   },
   {
-    title: 'Equipment Stats',
+    title: 'Equipment Stats While Equipped',
     fields: [
       ['weaponDamageIncrease', 'Weapon Damage'],
       ['subweaponDamageMult', 'Subweapon Damage'],
       ['maxHealthToIncrease', 'Max Health'],
+      ['stamineToIncrease', 'Max Stamina'],
       ['defToIncrease', 'Defense'],
     ],
   },
@@ -287,7 +288,11 @@ export default function ItemAdminEditor({ item, onClose, onSaved, compactHeader 
     try {
       await saveContentNode(item.writePath, draft);
       setMessage('Saved.');
-      onSaved?.();
+      onSaved?.({
+        data: draft,
+        firebaseKey: item.firebaseKey || item.id || draft.itemId || draft.itemName,
+        writePath: item.writePath,
+      });
     } catch {
       setError('Save failed.');
     } finally {

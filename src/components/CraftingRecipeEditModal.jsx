@@ -58,7 +58,12 @@ export default function CraftingRecipeEditModal({ recipe, items, validate, onClo
               path={recipe.writePath}
               value={recipe.raw}
               validate={validate}
-              onSaved={onSaved}
+              onSaved={(savedData) => onSaved?.({
+                data: savedData,
+                recipeId: savedData?.recipeId || recipe.recipeId || recipe.id,
+                writePath: recipe.writePath,
+                previousId: recipe.id,
+              })}
             />
           )}
           <CollapsibleJson data={recipe.raw} title="Raw recipe" />

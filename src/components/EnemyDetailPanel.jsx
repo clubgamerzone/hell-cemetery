@@ -266,7 +266,14 @@ export default function EnemyDetailPanel({ enemy, enemies = [], showDebug = fals
               path={enemy.writePath}
               value={enemy.raw}
               validate={(nextValue) => validateEnemyLoot(nextValue, items)}
-              onSaved={onSaved}
+              onSaved={(savedData) => onSaved?.({
+                data: savedData,
+                category: savedData?.category || enemy.category,
+                enemyKey: String(enemy.writePath || '').match(/^EnemySettings\/Categories\/[^/]+\/([^/]+)(\/enemyStats)?$/)?.[1] || enemy.id,
+                writePath: enemy.writePath,
+                previousId: enemy.id,
+                selectedId: `${savedData?.category || enemy.category}_${String(enemy.writePath || '').match(/^EnemySettings\/Categories\/[^/]+\/([^/]+)(\/enemyStats)?$/)?.[1] || enemy.id}`.replace(/\s+/g, '_'),
+              })}
             />
             <CollapsibleJson data={enemy.raw} title="Debug: Raw Enemy Data" />
           </section>

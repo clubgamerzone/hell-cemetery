@@ -36,6 +36,10 @@ function itemMatchesQuery(item, query) {
   ].some((value) => String(value || '').trim().toLowerCase() === normalizedQuery);
 }
 
+function sortItemsByName(a, b) {
+  return String(a.itemName || a.id || '').localeCompare(String(b.itemName || b.id || ''));
+}
+
 export default function ItemsPage() {
   const { isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -64,6 +68,39 @@ export default function ItemsPage() {
   useEffect(() => {
     loadItems();
   }, []);
+
+  function handleItemSaved(savedItem) {
+    if (!savedItem?.data) {
+      loadItems();
+      return;
+    }
+
+    const firebaseKey = savedItem.firebaseKey || savedItem.data.itemId || savedItem.data.itemName;
+    const normalized = normalizeItemSettings({ items: { [firebaseKey]: savedItem.data } })[0];
+    if (!normalized) {
+      loadItems();
+      return;
+    }
+
+    const nextItem = {
+      ...normalized,
+      writePath: savedItem.writePath || normalized.writePath,
+    };
+    setItems((current) => {
+      const currentIndex = current.findIndex((item) =>
+        item.writePath === nextItem.writePath ||
+        item.firebaseKey === firebaseKey ||
+        item.id === nextItem.id);
+
+      if (currentIndex === -1) {
+        return [...current, nextItem].sort(sortItemsByName);
+      }
+
+      const nextItems = current.slice();
+      nextItems[currentIndex] = nextItem;
+      return nextItems.sort(sortItemsByName);
+    });
+  }
 
   const visibleItems = useMemo(() => {
     const query = filter.trim().toLowerCase();
@@ -170,7 +207,7 @@ export default function ItemsPage() {
                 key={item.id}
                 item={item}
                 showDebug={isAdmin}
-                onSaved={loadItems}
+                onSaved={handleItemSaved}
                 highlighted={selectedItemQuery && itemMatchesQuery(item, selectedItemQuery)}
               />
             ))}
