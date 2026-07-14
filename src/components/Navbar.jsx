@@ -1,25 +1,27 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import GothicButton from './GothicButton';
 import logoPlaceholder from '../assets/images/logo-placeholder.svg';
 import styles from './Navbar.module.css';
 
 const navLinks = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/enemies', label: 'Enemies' },
-  { to: '/items', label: 'Items' },
-  { to: '/crafting', label: 'Crafting' },
-  { to: '/feedback', label: 'Feedback' },
-  { to: '/profile', label: 'Profile' },
-  { to: '/privacy-policy', label: 'Privacy Policy' },
+  { to: '/', labelKey: 'nav.home', end: true },
+  { to: '/enemies', labelKey: 'nav.enemies' },
+  { to: '/items', labelKey: 'nav.items' },
+  { to: '/crafting', labelKey: 'nav.crafting' },
+  { to: '/feedback', labelKey: 'nav.feedback' },
+  { to: '/profile', labelKey: 'nav.profile' },
+  { to: '/privacy-policy', labelKey: 'nav.privacy' },
 ];
 
 export default function Navbar() {
   const { currentUser, isAdmin, loading, logout } = useAuth();
+  const { language, languages, setLanguage, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const visibleNavLinks = isAdmin
-    ? [...navLinks, { to: '/game-data', label: 'Game Data' }]
+    ? [...navLinks, { to: '/game-data', labelKey: 'nav.gameData' }]
     : navLinks;
 
   async function handleLogout() {
@@ -50,7 +52,7 @@ export default function Navbar() {
         <button
           type="button"
           className={styles.navbar__toggle}
-          aria-label="Toggle navigation menu"
+          aria-label={t('nav.toggle')}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
@@ -61,7 +63,7 @@ export default function Navbar() {
 
         <div className={`${styles.navbar__menu} ${menuOpen ? styles['navbar__menu--open'] : ''}`}>
           <ul className={styles.navbar__links}>
-            {visibleNavLinks.map(({ to, label, end }) => (
+            {visibleNavLinks.map(({ to, labelKey, end }) => (
               <li key={to}>
                 <NavLink
                   to={to}
@@ -71,22 +73,43 @@ export default function Navbar() {
                   }
                   onClick={closeMenu}
                 >
-                  {label}
+                  {t(labelKey)}
                 </NavLink>
               </li>
             ))}
           </ul>
+
+          <div className={styles.navbar__language} aria-label={t('nav.language')}>
+            {languages.map((languageOption) => (
+              <button
+                type="button"
+                key={languageOption.code}
+                className={`${styles.navbar__flag} ${
+                  languageOption.code === language ? styles['navbar__flag--active'] : ''
+                }`}
+                title={languageOption.label}
+                aria-label={`${t('nav.language')}: ${languageOption.label}`}
+                aria-pressed={languageOption.code === language}
+                onClick={() => {
+                  setLanguage(languageOption.code);
+                  closeMenu();
+                }}
+              >
+                {languageOption.flag}
+              </button>
+            ))}
+          </div>
 
           <div className={styles.navbar__auth}>
             {loading ? (
               <span className={styles.navbar__link}>...</span>
             ) : currentUser ? (
               <GothicButton variant="ghost" size="small" onClick={handleLogout}>
-                Logout
+                {t('nav.logout')}
               </GothicButton>
             ) : (
               <GothicButton to="/login" variant="secondary" size="small" onClick={closeMenu}>
-                Login
+                {t('nav.login')}
               </GothicButton>
             )}
           </div>

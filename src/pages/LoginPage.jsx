@@ -1,41 +1,43 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import GothicCard from '../components/GothicCard';
 import GothicButton from '../components/GothicButton';
 import ErrorMessage from '../components/ErrorMessage';
 import styles from './LoginPage.module.css';
 
-function getAuthErrorMessage(error) {
+function getAuthErrorMessage(error, t) {
   switch (error.code) {
     case 'auth/invalid-email':
-      return 'Please enter a valid email address.';
+      return t('login.invalidEmail');
     case 'auth/user-disabled':
-      return 'This account has been disabled.';
+      return t('login.disabled');
     case 'auth/user-not-found':
     case 'auth/wrong-password':
     case 'auth/invalid-credential':
-      return 'Invalid email or password.';
+      return t('login.invalidCredential');
     case 'auth/email-already-in-use':
-      return 'An account with this email already exists.';
+      return t('login.emailExists');
     case 'auth/weak-password':
-      return 'Password must be at least 6 characters.';
+      return t('login.weakPassword');
     case 'auth/too-many-requests':
-      return 'Too many attempts. Please try again later.';
+      return t('login.tooMany');
     case 'auth/popup-closed-by-user':
-      return 'Sign-in was cancelled before it finished.';
+      return t('login.cancelled');
     case 'auth/operation-not-allowed':
-      return 'This sign-in method is not enabled in Firebase yet.';
+      return t('login.providerDisabled');
     case 'auth/unauthorized-domain':
-      return 'This domain is not authorized in Firebase Authentication settings.';
+      return t('login.unauthorizedDomain');
     case 'auth/account-exists-with-different-credential':
-      return 'An account already exists with this email using another sign-in method.';
+      return t('login.accountDifferentCredential');
     default:
-      return error.message || 'Authentication failed. Please try again.';
+      return error.message || t('login.authFailed');
   }
 }
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -83,12 +85,12 @@ export default function LoginPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('login.passwordMismatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('login.weakPassword'));
       return;
     }
 
@@ -121,7 +123,7 @@ export default function LoginPage() {
       const resolver = getMfaResolver(err);
       const totpHint = resolver.hints.find((hint) => hint.factorId === 'totp') || resolver.hints[0];
       if (!totpHint) {
-        setError('This account requires a second factor, but no supported factor was found.');
+        setError(t('login.noFactor'));
         return;
       }
 
@@ -131,7 +133,7 @@ export default function LoginPage() {
       return;
     }
 
-    setError(getAuthErrorMessage(err));
+    setError(getAuthErrorMessage(err, t));
   }
 
   async function handleMfaSubmit(e) {
@@ -143,9 +145,9 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       if (err?.code === 'auth/operation-not-allowed') {
-        setError('TOTP two-factor authentication is not enabled in Firebase for this project yet.');
+        setError(t('login.totpNotEnabled'));
       } else {
-        setError(getAuthErrorMessage(err));
+        setError(getAuthErrorMessage(err, t));
       }
     } finally {
       setLoading(false);
@@ -157,15 +159,15 @@ export default function LoginPage() {
       <div className="page">
         <div className={styles.login}>
           <div className={styles.login__header}>
-            <h1>Two-Factor Check</h1>
-            <p>Enter the code from your authenticator app to continue.</p>
+            <h1>{t('login.mfaTitle')}</h1>
+            <p>{t('login.mfaSubtitle')}</p>
           </div>
 
           <GothicCard flat className={styles.login__card}>
             <ErrorMessage message={error} />
             <form onSubmit={handleMfaSubmit} className={styles.form}>
               <div className={styles.form__group}>
-                <label htmlFor="mfa-code">Authenticator Code</label>
+                <label htmlFor="mfa-code">{t('login.authenticatorCode')}</label>
                 <input
                   id="mfa-code"
                   type="text"
@@ -179,7 +181,7 @@ export default function LoginPage() {
                 />
               </div>
               <GothicButton type="submit" fullWidth disabled={loading || mfaCode.trim().length < 6}>
-                {loading ? 'Verifying...' : 'Verify'}
+                {loading ? t('login.verifying') : t('login.verify')}
               </GothicButton>
             </form>
           </GothicCard>
@@ -192,11 +194,11 @@ export default function LoginPage() {
     <div className="page">
       <div className={styles.login}>
         <div className={styles.login__header}>
-          <h1>{isRegistering ? 'Create Account' : 'Enter the Cemetery'}</h1>
+          <h1>{isRegistering ? t('login.createAccount') : t('login.enter')}</h1>
           <p>
             {isRegistering
-              ? 'Register a new account to link your game progress.'
-              : 'Sign in with your game account to view your player profile.'}
+              ? t('login.registerSubtitle')
+              : t('login.signInSubtitle')}
           </p>
         </div>
 
@@ -213,7 +215,7 @@ export default function LoginPage() {
                   disabled={Boolean(providerLoading) || loading}
                   onClick={() => handleProviderLogin('Apple', loginWithApple)}
                 >
-                  {providerLoading === 'Apple' ? 'Opening Apple...' : 'Continue with Apple'}
+                  {providerLoading === 'Apple' ? t('login.appleOpening') : t('login.apple')}
                 </GothicButton>
                 <GothicButton
                   type="button"
@@ -222,17 +224,17 @@ export default function LoginPage() {
                   disabled={Boolean(providerLoading) || loading}
                   onClick={() => handleProviderLogin('Facebook', loginWithFacebook)}
                 >
-                  {providerLoading === 'Facebook' ? 'Opening Facebook...' : 'Continue with Facebook'}
+                  {providerLoading === 'Facebook' ? t('login.facebookOpening') : t('login.facebook')}
                 </GothicButton>
               </div>
 
               <div className={styles.divider}>
-                <span>Email sign in</span>
+                <span>{t('login.emailSignIn')}</span>
               </div>
 
               <form onSubmit={handleLogin} className={styles.form}>
                 <div className={styles.form__group}>
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email">{t('login.email')}</label>
                   <input
                     id="email"
                     type="email"
@@ -244,7 +246,7 @@ export default function LoginPage() {
                   />
                 </div>
                 <div className={styles.form__group}>
-                  <label htmlFor="password">Password</label>
+                  <label htmlFor="password">{t('login.password')}</label>
                   <input
                     id="password"
                     type="password"
@@ -252,18 +254,18 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     autoComplete="current-password"
-                    placeholder="Password"
+                    placeholder={t('login.password')}
                   />
                 </div>
                 <GothicButton type="submit" fullWidth disabled={loading || Boolean(providerLoading)}>
-                  {loading ? 'Signing in...' : 'Login'}
+                  {loading ? t('login.signingIn') : t('nav.login')}
                 </GothicButton>
               </form>
             </>
           ) : (
             <form onSubmit={handleRegister} className={styles.form}>
               <div className={styles.form__group}>
-                <label htmlFor="reg-email">Email</label>
+                <label htmlFor="reg-email">{t('login.email')}</label>
                 <input
                   id="reg-email"
                   type="email"
@@ -274,7 +276,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className={styles.form__group}>
-                <label htmlFor="reg-password">Password</label>
+                <label htmlFor="reg-password">{t('login.password')}</label>
                 <input
                   id="reg-password"
                   type="password"
@@ -286,7 +288,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className={styles.form__group}>
-                <label htmlFor="confirm-password">Confirm Password</label>
+                <label htmlFor="confirm-password">{t('login.confirmPassword')}</label>
                 <input
                   id="confirm-password"
                   type="password"
@@ -297,7 +299,7 @@ export default function LoginPage() {
                 />
               </div>
               <GothicButton type="submit" fullWidth disabled={loading || Boolean(providerLoading)}>
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? t('login.creating') : t('login.createAccount')}
               </GothicButton>
             </form>
           )}
@@ -305,24 +307,24 @@ export default function LoginPage() {
           <div className={styles.login__toggle}>
             {!isRegistering ? (
               <p>
-                Need an account?{' '}
+                {t('login.needAccount')}{' '}
                 <button
                   type="button"
                   className={styles.linkButton}
                   onClick={() => { setIsRegistering(true); setError(''); }}
                 >
-                  Create Account
+                  {t('login.createAccount')}
                 </button>
               </p>
             ) : (
               <p>
-                Already have an account?{' '}
+                {t('login.haveAccount')}{' '}
                 <button
                   type="button"
                   className={styles.linkButton}
                   onClick={() => { setIsRegistering(false); setError(''); }}
                 >
-                  Sign In
+                  {t('login.signIn')}
                 </button>
               </p>
             )}
@@ -330,7 +332,7 @@ export default function LoginPage() {
         </GothicCard>
 
         <p className={styles.login__back}>
-          <Link to="/">Return to Home</Link>
+          <Link to="/">{t('login.returnHome')}</Link>
         </p>
       </div>
     </div>

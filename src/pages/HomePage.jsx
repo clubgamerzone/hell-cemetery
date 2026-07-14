@@ -1,32 +1,26 @@
 import HeroSection from '../components/HeroSection';
 import GothicCard from '../components/GothicCard';
+import { useLanguage } from '../context/LanguageContext';
 import styles from './HomePage.module.css';
 
 export default function HomePage() {
+  const { t } = useLanguage();
+
   return (
     <div className="page page--wide">
       <HeroSection />
 
       <section className={styles.features}>
-        <h2 className={styles.features__title}>Explore the Darkness</h2>
+        <h2 className={styles.features__title}>{t('home.features.title')}</h2>
         <div className={styles.features__grid}>
-          <GothicCard title="Deadly Foes">
-            <p>
-              Face twisted horrors drawn from gothic folklore. Study enemy stats,
-              weaknesses, and rewards before you descend into the crypts.
-            </p>
+          <GothicCard title={t('home.features.foes.title')}>
+            <p>{t('home.features.foes.body')}</p>
           </GothicCard>
-          <GothicCard title="Ancient Relics">
-            <p>
-              Discover weapons, armor, and artifacts scattered across the cemetery.
-              Each item carries its own legend — and its own power.
-            </p>
+          <GothicCard title={t('home.features.relics.title')}>
+            <p>{t('home.features.relics.body')}</p>
           </GothicCard>
-          <GothicCard title="Your Legacy">
-            <p>
-              Log in to view your castle, market listings, and raid history.
-              Your progress in Hell Cemetery follows you from the game to the web.
-            </p>
+          <GothicCard title={t('home.features.legacy.title')}>
+            <p>{t('home.features.legacy.body')}</p>
           </GothicCard>
         </div>
       </section>

@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import CraftingRecipeEditModal from '../components/CraftingRecipeEditModal';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import styles from './CraftingPage.module.css';
 
 const RARITY_LABELS = {
@@ -58,7 +59,7 @@ function getRecipeRarity(recipe, itemLookup) {
   return 'Unspecified';
 }
 
-function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
+function RecipeCard({ recipe, showDebug = false, items = [], onSaved, t }) {
   const [isEditing, setIsEditing] = useState(false);
   const output = recipe.output;
   const itemKeys = new Set(
@@ -76,7 +77,7 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
 
     const missing = references.filter((reference) => !itemKeys.has(String(reference)));
     if (missing.length > 0) {
-      return `Recipes must reference existing items. Not found: ${missing.slice(0, 4).join(', ')}`;
+      return t('crafting.validationMissing', { items: missing.slice(0, 4).join(', ') });
     }
     return '';
   }
@@ -90,7 +91,7 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
         </div>
         <div className={styles.recipeActions}>
           <span className={`${styles.status} ${recipe.enabled ? styles.enabled : styles.disabled}`}>
-            {recipe.enabled ? 'Enabled' : 'Disabled'}
+            {recipe.enabled ? t('crafting.enabled') : t('crafting.disabled')}
           </span>
           {showDebug && (
             <button
@@ -98,7 +99,7 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
               className={styles.editButton}
               onClick={() => setIsEditing(true)}
             >
-              Edit
+              {t('crafting.edit')}
             </button>
           )}
         </div>
@@ -107,23 +108,23 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
 
       <div className={styles.metaGrid}>
-        <span>Coins: {recipe.moneyCost}</span>
-        <span>Level: {recipe.requiredLevel}</span>
-        {output && <span>Output: {output.itemName || output.itemId} x{output.amount || 1}</span>}
+        <span>{t('crafting.coins')}: {recipe.moneyCost}</span>
+        <span>{t('crafting.level')}: {recipe.requiredLevel}</span>
+        {output && <span>{t('crafting.output')}: {output.itemName || output.itemId} x{output.amount || 1}</span>}
       </div>
 
-      <h4 className={styles.subheading}>Ingredients</h4>
+      <h4 className={styles.subheading}>{t('crafting.ingredients')}</h4>
       {recipe.ingredients.length > 0 ? (
         <ul className={styles.ingredients}>
           {recipe.ingredients.map((ingredient, index) => (
             <li key={`${ingredient.itemId || ingredient.itemName || index}-${index}`}>
-              <span>{ingredient.itemName || ingredient.itemId || 'Unknown item'}</span>
+              <span>{ingredient.itemName || ingredient.itemId || t('crafting.unknownItem')}</span>
               <strong>x{ingredient.amount || 1}</strong>
             </li>
           ))}
         </ul>
       ) : (
-        <p className={styles.empty}>No ingredients listed.</p>
+        <p className={styles.empty}>{t('crafting.noIngredients')}</p>
       )}
 
       {showDebug && isEditing && (
@@ -141,6 +142,7 @@ function RecipeCard({ recipe, showDebug = false, items = [], onSaved }) {
 
 export default function CraftingPage() {
   const { isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [recipes, setRecipes] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -158,7 +160,7 @@ export default function CraftingPage() {
       const itemData = await getItems();
       setItems(normalizeItemSettings(itemData));
     } catch {
-      setError('Failed to load crafting recipes. Please try again.');
+      setError(t('crafting.error'));
     } finally {
       setLoading(false);
     }
@@ -223,17 +225,15 @@ export default function CraftingPage() {
   return (
     <div className="page page--wide">
       <div className="page-header">
-        <h1>Crafting Recipes</h1>
-        <p>
-          Browse forge recipes, required materials, and crafting costs.
-        </p>
+        <h1>{t('crafting.title')}</h1>
+        <p>{t('crafting.subtitle')}</p>
       </div>
 
       <div className={styles.filters}>
         <input
           type="search"
           className={styles.search}
-          placeholder="Search recipes or ingredients..."
+          placeholder={t('crafting.search')}
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
         />
@@ -241,9 +241,9 @@ export default function CraftingPage() {
           className={styles.categorySelect}
           value={categoryFilter}
           onChange={(event) => setCategoryFilter(event.target.value)}
-          aria-label="Filter recipes by category"
+          aria-label={t('crafting.categoryFilter')}
         >
-          <option value="">All categories</option>
+          <option value="">{t('crafting.allCategories')}</option>
           {categoryOptions.map((category) => (
             <option key={category.value} value={category.value}>
               {category.value} ({category.count})
@@ -254,9 +254,9 @@ export default function CraftingPage() {
           className={styles.categorySelect}
           value={rarityFilter}
           onChange={(event) => setRarityFilter(event.target.value)}
-          aria-label="Filter recipes by rarity"
+          aria-label={t('crafting.rarityFilter')}
         >
-          <option value="">All rarities</option>
+          <option value="">{t('crafting.allRarities')}</option>
           {rarityOptions.map((rarity) => (
             <option key={rarity.value} value={rarity.value}>
               {rarity.value} ({rarity.count})
@@ -265,17 +265,17 @@ export default function CraftingPage() {
         </select>
       </div>
 
-      {loading && <LoadingSpinner message="Loading crafting recipes..." />}
+      {loading && <LoadingSpinner message={t('crafting.loading')} />}
       <ErrorMessage message={error} onRetry={loadRecipes} />
 
       {!loading && !error && recipes.length === 0 && (
-        <div className="empty-state">No crafting recipes found.</div>
+        <div className="empty-state">{t('crafting.empty')}</div>
       )}
 
       {!loading && !error && recipes.length > 0 && (
         <>
           <div className="notice notice--info" style={{ marginBottom: '1.25rem' }}>
-            Showing {visibleRecipes.length} of {recipes.length} recipes.
+            {t('crafting.countNotice', { visible: visibleRecipes.length, total: recipes.length })}
           </div>
           <div className={styles.grid}>
             {visibleRecipes.map((recipe) => (
@@ -285,6 +285,7 @@ export default function CraftingPage() {
                 showDebug={isAdmin}
                 items={items}
                 onSaved={loadRecipes}
+                t={t}
               />
             ))}
           </div>

@@ -5,9 +5,11 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import CollapsibleJson from '../components/CollapsibleJson';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function GameDataPage() {
   const { currentUser, isAdmin, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const [gameData, setGameData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,7 +22,7 @@ export default function GameDataPage() {
       const data = await getGameData();
       setGameData(data);
     } catch {
-      setError('Failed to load game data. Please try again.');
+      setError(t('gameData.error'));
     } finally {
       setLoading(false);
     }
@@ -42,34 +44,34 @@ export default function GameDataPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Game Data</h1>
-        <p>Admin-only database inspection.</p>
+        <h1>{t('nav.gameData')}</h1>
+        <p>{t('gameData.subtitle')}</p>
       </div>
 
-      {authLoading && <LoadingSpinner message="Checking access..." />}
+      {authLoading && <LoadingSpinner message={t('gameData.checking')} />}
 
       {!authLoading && (!currentUser || !isAdmin) && (
-        <div className="empty-state">This page is restricted to the site admin.</div>
+        <div className="empty-state">{t('gameData.restricted')}</div>
       )}
 
-      {!authLoading && isAdmin && loading && <LoadingSpinner message="Loading game configuration..." />}
+      {!authLoading && isAdmin && loading && <LoadingSpinner message={t('gameData.loading')} />}
       {!authLoading && isAdmin && <ErrorMessage message={error} onRetry={loadGameData} />}
 
       {!authLoading && isAdmin && !loading && !error && !gameData && (
-        <div className="empty-state">No game data found in the database.</div>
+        <div className="empty-state">{t('gameData.empty')}</div>
       )}
 
       {!authLoading && isAdmin && !loading && !error && gameData && (
         <>
-          <GothicCard title="Overview" flat>
+          <GothicCard title={t('gameData.overview')} flat>
             <p style={{ color: 'var(--color-gray-light)', marginBottom: '1rem' }}>
-              Top-level nodes in GameData:{' '}
-              {topLevelKeys.length > 0 ? topLevelKeys.join(', ') : 'None'}
+              {t('gameData.nodes')}:{' '}
+              {topLevelKeys.length > 0 ? topLevelKeys.join(', ') : t('gameData.none')}
             </p>
           </GothicCard>
 
           <div style={{ marginTop: '1.5rem' }}>
-            <CollapsibleJson data={gameData} title="Full GameData JSON" />
+            <CollapsibleJson data={gameData} title={t('gameData.fullJson')} />
           </div>
         </>
       )}

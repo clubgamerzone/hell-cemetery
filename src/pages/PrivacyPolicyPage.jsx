@@ -1,19 +1,21 @@
 import { privacyPolicyContent } from '../content/privacyPolicy';
 import GothicCard from '../components/GothicCard';
+import { useLanguage } from '../context/LanguageContext';
 import styles from './PrivacyPolicyPage.module.css';
 
 export default function PrivacyPolicyPage() {
   const { lastUpdated, contactEmail, sections } = privacyPolicyContent;
+  const { t } = useLanguage();
 
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Privacy Policy</h1>
-        <p>Hell Cemetery — How we handle your data</p>
+        <h1>{t('nav.privacy')}</h1>
+        <p>{t('privacy.subtitle')}</p>
       </div>
 
       <p className={styles.meta}>
-        Last updated: {lastUpdated}
+        {t('privacy.lastUpdated')}: {lastUpdated}
       </p>
 
       <div className={styles.sections}>

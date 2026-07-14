@@ -1,10 +1,12 @@
 import GothicButton from './GothicButton';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import heroPlaceholder from '../assets/images/hero-placeholder.svg';
 import styles from './HeroSection.module.css';
 
 export default function HeroSection() {
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <section className={styles.hero}>
@@ -20,27 +22,25 @@ export default function HeroSection() {
 
       <div className={styles.hero__content}>
         <h1 className={styles.hero__title}>Hell Cemetery</h1>
-        <p className={styles.hero__subtitle}>A dark gothic metroidvania adventure</p>
+        <p className={styles.hero__subtitle}>{t('hero.subtitle')}</p>
         <p className={styles.hero__description}>
-          Descend into a cursed realm of crumbling crypts and forgotten kings.
-          Explore interconnected ruins, battle unholy creatures, uncover ancient relics,
-          and reclaim your castle from the shadows that dwell within Hell Cemetery.
+          {t('hero.description')}
         </p>
         <div className={styles.hero__actions}>
           {currentUser ? (
             <GothicButton to="/profile" size="large">
-              View Profile
+              {t('hero.profile')}
             </GothicButton>
           ) : (
             <GothicButton to="/login" size="large">
-              Login
+              {t('hero.login')}
             </GothicButton>
           )}
           <GothicButton to="/enemies" variant="secondary" size="large">
-            View Enemies
+            {t('hero.enemies')}
           </GothicButton>
           <GothicButton to="/items" variant="ghost" size="large">
-            View Items
+            {t('hero.items')}
           </GothicButton>
         </div>
       </div>

@@ -5,6 +5,7 @@ import ItemCard from '../components/ItemCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import styles from './ItemsPage.module.css';
 
 function getItemCategory(item) {
@@ -37,6 +38,7 @@ function itemMatchesQuery(item, query) {
 
 export default function ItemsPage() {
   const { isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function ItemsPage() {
       const data = await getItems();
       setItems(normalizeItemSettings(data));
     } catch {
-      setError('Failed to load item data. Please try again.');
+      setError(t('items.error'));
     } finally {
       setLoading(false);
     }
@@ -108,19 +110,15 @@ export default function ItemsPage() {
   return (
     <div className="page page--wide">
       <div className="page-header">
-        <h1>Relics &amp; Artifacts</h1>
-        <p>
-          Discover the items scattered across Hell Cemetery. Data is loaded from
-          Firebase ItemSettings, including images, prefab references, store data,
-          and balance stats.
-        </p>
+        <h1>{t('items.title')}</h1>
+        <p>{t('items.subtitle')}</p>
       </div>
 
       <div className={styles.filters}>
         <input
           type="search"
           className={styles.search}
-          placeholder="Search items by name, category, type, or rarity..."
+          placeholder={t('items.search')}
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
         />
@@ -128,9 +126,9 @@ export default function ItemsPage() {
           className={styles.categorySelect}
           value={categoryFilter}
           onChange={(event) => setCategoryFilter(event.target.value)}
-          aria-label="Filter items by category"
+          aria-label={t('items.categoryFilter')}
         >
-          <option value="">All categories</option>
+          <option value="">{t('items.allCategories')}</option>
           {categoryOptions.map((category) => (
             <option key={category.value} value={category.value}>
               {category.value} ({category.count})
@@ -141,9 +139,9 @@ export default function ItemsPage() {
           className={styles.categorySelect}
           value={rarityFilter}
           onChange={(event) => setRarityFilter(event.target.value)}
-          aria-label="Filter items by rarity"
+          aria-label={t('items.rarityFilter')}
         >
-          <option value="">All rarities</option>
+          <option value="">{t('items.allRarities')}</option>
           {rarityOptions.map((rarity) => (
             <option key={rarity.value} value={rarity.value}>
               {rarity.value} ({rarity.count})
@@ -152,19 +150,19 @@ export default function ItemsPage() {
         </select>
       </div>
 
-      {loading && <LoadingSpinner message="Uncovering relics..." />}
+      {loading && <LoadingSpinner message={t('items.loading')} />}
       <ErrorMessage message={error} onRetry={loadItems} />
 
       {!loading && !error && items.length === 0 && (
-        <div className="empty-state">Items will be revealed soon.</div>
+        <div className="empty-state">{t('items.empty')}</div>
       )}
 
       {!loading && !error && items.length > 0 && (
         <>
           <div className="notice notice--info" style={{ marginBottom: '1.25rem' }}>
             {selectedItemQuery
-              ? `Showing item match for "${selectedItemQuery}".`
-              : `Showing ${visibleItems.length} of ${items.length} items.`}
+              ? t('items.matchNotice', { item: selectedItemQuery })
+              : t('items.countNotice', { visible: visibleItems.length, total: items.length })}
           </div>
           <div className="grid grid--items">
             {visibleItems.map((item) => (

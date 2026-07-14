@@ -9,49 +9,54 @@ import ErrorMessage from '../components/ErrorMessage';
 import GothicButton from '../components/GothicButton';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import styles from './FeedbackPage.module.css';
 
 const CATEGORIES = [
-  'General Feedback',
-  'Bug Report',
-  'Balance',
-  'Feature Idea',
-  'Community',
+  { value: 'General Feedback', labelKey: 'feedback.category.general' },
+  { value: 'Bug Report', labelKey: 'feedback.category.bug' },
+  { value: 'Balance', labelKey: 'feedback.category.balance' },
+  { value: 'Feature Idea', labelKey: 'feedback.category.idea' },
+  { value: 'Community', labelKey: 'feedback.category.community' },
 ];
 
-function displayDate(value) {
-  if (!value) return 'Just now';
-  return new Intl.DateTimeFormat(undefined, {
+function displayDate(value, language, t) {
+  if (!value) return t('feedback.justNow');
+  return new Intl.DateTimeFormat(language, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(Number(value)));
 }
 
-function getAuthorName(user) {
-  if (!user) return 'Cemetery Player';
+function getAuthorName(user, t) {
+  if (!user) return t('feedback.defaultAuthor');
   if (user.displayName) return user.displayName;
   if (user.email) return user.email.split('@')[0];
-  return 'Cemetery Player';
+  return t('feedback.defaultAuthor');
 }
 
-function PostCard({ post, canModerate, onDelete }) {
+function getCategoryLabel(category, t) {
+  return t(CATEGORIES.find((option) => option.value === category)?.labelKey || 'feedback.category.general');
+}
+
+function PostCard({ post, canModerate, onDelete, language, t }) {
   return (
     <article className={styles.post}>
       <div className={styles.postHeader}>
         <div>
-          <span className={styles.category}>{post.category || 'General Feedback'}</span>
+          <span className={styles.category}>{getCategoryLabel(post.category, t)}</span>
           <h2>{post.title}</h2>
         </div>
         {canModerate && (
           <button type="button" className={styles.deleteButton} onClick={() => onDelete(post.id)}>
-            Delete
+            {t('feedback.delete')}
           </button>
         )}
       </div>
       <p className={styles.body}>{post.body}</p>
       <div className={styles.meta}>
-        <span>{post.authorName || 'Cemetery Player'}</span>
-        <span>{displayDate(post.createdAt)}</span>
+        <span>{post.authorName || t('feedback.defaultAuthor')}</span>
+        <span>{displayDate(post.createdAt, language, t)}</span>
       </div>
     </article>
   );
@@ -59,6 +64,7 @@ function PostCard({ post, canModerate, onDelete }) {
 
 export default function FeedbackPage() {
   const { currentUser, isAdmin } = useAuth();
+  const { language, t } = useLanguage();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,7 +73,7 @@ export default function FeedbackPage() {
   const [filter, setFilter] = useState('');
   const [form, setForm] = useState({
     title: '',
-    category: CATEGORIES[0],
+    category: CATEGORIES[0].value,
     body: '',
   });
 
@@ -77,7 +83,7 @@ export default function FeedbackPage() {
     try {
       setPosts(await getFeedbackPosts());
     } catch {
-      setError('Failed to load community feedback.');
+      setError(t('feedback.loadError'));
     } finally {
       setLoading(false);
     }
@@ -109,7 +115,7 @@ export default function FeedbackPage() {
     const title = form.title.trim();
     const body = form.body.trim();
     if (title.length < 4 || body.length < 10) {
-      setError('Please add a clear title and at least a short message.');
+      setError(t('feedback.validation'));
       return;
     }
 
@@ -122,16 +128,16 @@ export default function FeedbackPage() {
         body: body.slice(0, 2000),
         category: form.category,
         authorUid: currentUser.uid,
-        authorName: getAuthorName(currentUser),
+        authorName: getAuthorName(currentUser, t),
       });
-      setForm({ title: '', category: CATEGORIES[0], body: '' });
-      setMessage('Feedback posted.');
+      setForm({ title: '', category: CATEGORIES[0].value, body: '' });
+      setMessage(t('feedback.posted'));
       await loadPosts();
     } catch (exception) {
       const messageText = String(exception?.message || '').toLowerCase();
       setError(messageText.includes('permission_denied') || messageText.includes('permission denied')
-        ? 'Firebase rejected the post. Update Realtime Database rules to allow signed-in users to write CommunityFeedback/posts.'
-        : `Could not post feedback: ${exception.message || 'Please try again.'}`);
+        ? t('feedback.rulesError')
+        : t('feedback.postError', { message: exception.message || 'Please try again.' }));
     } finally {
       setSaving(false);
     }
@@ -144,7 +150,7 @@ export default function FeedbackPage() {
       await removeFeedbackPost(postId);
       await loadPosts();
     } catch {
-      setError('Could not delete that post.');
+      setError(t('feedback.deleteError'));
     } finally {
       setSaving(false);
     }
@@ -153,57 +159,55 @@ export default function FeedbackPage() {
   return (
     <div className="page page--wide">
       <div className="page-header">
-        <h1>Community Feedback</h1>
-        <p>
-          Share ideas, report issues, and help shape Hell Cemetery with other players.
-        </p>
+        <h1>{t('feedback.title')}</h1>
+        <p>{t('feedback.subtitle')}</p>
       </div>
 
       <div className={styles.layout}>
         <section className={styles.composer}>
-          <h2>Leave Feedback</h2>
+          <h2>{t('feedback.leave')}</h2>
           {currentUser ? (
             <form onSubmit={handleSubmit} className={styles.form}>
               <label className={styles.field}>
-                <span>Category</span>
+                <span>{t('feedback.category')}</span>
                 <select
                   value={form.category}
                   onChange={(event) => setFormField('category', event.target.value)}
                 >
                   {CATEGORIES.map((category) => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category.value} value={category.value}>{t(category.labelKey)}</option>
                   ))}
                 </select>
               </label>
 
               <label className={styles.field}>
-                <span>Title</span>
+                <span>{t('feedback.formTitle')}</span>
                 <input
                   value={form.title}
                   maxLength={120}
-                  placeholder="Short summary"
+                  placeholder={t('feedback.summaryPlaceholder')}
                   onChange={(event) => setFormField('title', event.target.value)}
                 />
               </label>
 
               <label className={styles.field}>
-                <span>Comment</span>
+                <span>{t('feedback.comment')}</span>
                 <textarea
                   value={form.body}
                   maxLength={2000}
-                  placeholder="Tell us what you think..."
+                  placeholder={t('feedback.commentPlaceholder')}
                   onChange={(event) => setFormField('body', event.target.value)}
                 />
               </label>
 
               <GothicButton type="submit" size="small" disabled={saving}>
-                {saving ? 'Posting...' : 'Post Feedback'}
+                {saving ? t('feedback.posting') : t('feedback.post')}
               </GothicButton>
             </form>
           ) : (
             <div className={styles.loginPrompt}>
-              <p>Players can read feedback here. Sign in to post your own comment.</p>
-              <GothicButton to="/login" size="small">Login to Post</GothicButton>
+              <p>{t('feedback.loginPrompt')}</p>
+              <GothicButton to="/login" size="small">{t('feedback.loginToPost')}</GothicButton>
             </div>
           )}
           {message && <p className={styles.message}>{message}</p>}
@@ -211,28 +215,28 @@ export default function FeedbackPage() {
 
         <section className={styles.feed}>
           <div className={styles.feedHeader}>
-            <h2>Player Posts</h2>
+            <h2>{t('feedback.playerPosts')}</h2>
             <input
               type="search"
               value={filter}
-              placeholder="Search feedback..."
+              placeholder={t('feedback.search')}
               onChange={(event) => setFilter(event.target.value)}
             />
           </div>
 
-          {loading && <LoadingSpinner message="Loading community posts..." />}
+          {loading && <LoadingSpinner message={t('feedback.loading')} />}
           <ErrorMessage message={error} onRetry={loadPosts} />
 
           {!loading && !error && posts.length === 0 && (
             <div className={styles.empty}>
-              No feedback yet. The first post is waiting for a brave soul.
+              {t('feedback.empty')}
             </div>
           )}
 
           {!loading && !error && posts.length > 0 && (
             <>
               <p className={styles.count}>
-                Showing {visiblePosts.length} of {posts.length} posts.
+                {t('feedback.countNotice', { visible: visiblePosts.length, total: posts.length })}
               </p>
               <div className={styles.posts}>
                 {visiblePosts.map((post) => (
@@ -241,6 +245,8 @@ export default function FeedbackPage() {
                     post={post}
                     canModerate={isAdmin}
                     onDelete={handleDelete}
+                    language={language}
+                    t={t}
                   />
                 ))}
               </div>
@@ -248,7 +254,7 @@ export default function FeedbackPage() {
           )}
 
           <p className={styles.privacyNote}>
-            Please avoid sharing private account details. Read the <Link to="/privacy-policy">privacy policy</Link>.
+            {t('feedback.privacy')}<Link to="/privacy-policy">{t('feedback.privacyLink')}</Link>.
           </p>
         </section>
       </div>
