@@ -23,6 +23,8 @@ export default function CraftingRecipeEditModal({ recipe, items, validate, onClo
     };
   }, [onClose]);
 
+  const title = recipe.isNew ? 'Create Recipe' : 'Edit Recipe';
+
   return createPortal(
     <div className={styles.overlay} role="presentation" onMouseDown={onClose}>
       <section
@@ -34,7 +36,7 @@ export default function CraftingRecipeEditModal({ recipe, items, validate, onClo
       >
         <div className={styles.modalHeader}>
           <div>
-            <h2 id="recipe-editor-title">Edit Recipe</h2>
+            <h2 id="recipe-editor-title">{title}</h2>
             <p>{recipe.displayName || recipe.recipeId}</p>
           </div>
           <button type="button" className={styles.closeButton} onClick={onClose}>
@@ -50,13 +52,15 @@ export default function CraftingRecipeEditModal({ recipe, items, validate, onClo
             onSaved={onSaved}
             compactHeader
           />
-          <AdminJsonEditor
-            title="Advanced Recipe JSON"
-            path={recipe.writePath}
-            value={recipe.raw}
-            validate={validate}
-            onSaved={onSaved}
-          />
+          {!recipe.isNew && (
+            <AdminJsonEditor
+              title="Advanced Recipe JSON"
+              path={recipe.writePath}
+              value={recipe.raw}
+              validate={validate}
+              onSaved={onSaved}
+            />
+          )}
           <CollapsibleJson data={recipe.raw} title="Raw recipe" />
         </div>
       </section>

@@ -23,6 +23,24 @@
   color: var(--color-text);
 }
 
+.createButton {
+  flex-shrink: 0;
+  border: 1px solid var(--color-red-bright);
+  border-radius: var(--radius-sm);
+  background: rgba(139, 0, 0, 0.42);
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  padding: 0.75rem 1rem;
+  text-transform: uppercase;
+}
+
+.createButton:hover {
+  background: rgba(180, 12, 12, 0.58);
+  box-shadow: 0 0 0 2px var(--color-red-glow);
+}
+
 .search:focus,
 .categorySelect:focus {
   outline: none;
@@ -71,7 +89,8 @@
   overflow-wrap: anywhere;
 }
 
-.status {
+.status,
+.statusButton {
   flex-shrink: 0;
   border: 1px solid;
   border-radius: var(--radius-sm);
@@ -79,6 +98,20 @@
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.statusButton {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.statusButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.statusButton:not(:disabled):hover {
+  box-shadow: 0 0 0 2px var(--color-red-glow);
 }
 
 .editButton {
@@ -117,9 +150,48 @@
   line-height: 1.5;
 }
 
+.outputPanel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  min-height: 72px;
+  padding: 0.65rem;
+}
+
+.outputImage,
+.ingredientImage {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.outputImage {
+  width: 56px;
+  height: 56px;
+}
+
+.outputPanel strong {
+  display: block;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.outputLabel {
+  color: var(--color-gold);
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+
 .metaGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
 }
 
@@ -148,8 +220,21 @@
 
 .ingredients li {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.ingredientItem {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.ingredientImage {
+  width: 32px;
+  height: 32px;
 }
 
 @media (max-width: 640px) {
@@ -159,7 +244,8 @@
   }
 
   .search,
-  .categorySelect {
+  .categorySelect,
+  .createButton {
     width: 100%;
   }
 

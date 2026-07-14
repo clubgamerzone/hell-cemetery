@@ -98,13 +98,20 @@
 .outputRow,
 .ingredientRow {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(90px, 0.5fr) auto;
+  grid-template-columns: 56px minmax(0, 2fr) minmax(90px, 0.5fr) auto;
   gap: 0.65rem;
   align-items: end;
 }
 
 .outputRow {
-  grid-template-columns: minmax(0, 2fr) minmax(90px, 0.5fr) minmax(180px, 1fr);
+  grid-template-columns: 56px minmax(0, 2fr) minmax(90px, 0.5fr) minmax(180px, 1fr);
+}
+
+.itemPreview {
+  align-self: center;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .ingredientList {

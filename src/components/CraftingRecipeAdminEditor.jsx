@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { saveContentNode } from '../firebase/databaseService';
 import GothicButton from './GothicButton';
+import itemPlaceholder from '../assets/images/item-placeholder.svg';
 import styles from './CraftingRecipeAdminEditor.module.css';
 
 function clone(value) {
@@ -21,6 +22,22 @@ function getItemName(item) {
   return item.itemName || item.firebaseKey || item.itemId;
 }
 
+function getSelectedItem(itemOptions, reference) {
+  const keys = [
+    reference?.itemId,
+    reference?.itemName,
+    reference?.firebaseKey,
+    reference?.legacyId,
+  ].filter((value) => value !== null && value !== undefined && value !== '').map(String);
+
+  return itemOptions.find((option) => keys.includes(String(option.item.itemId)) ||
+    keys.includes(String(option.item.firebaseKey)) ||
+    keys.includes(String(option.item.itemName)) ||
+    keys.includes(String(option.item.raw?.legacyId)) ||
+    keys.includes(String(option.item.raw?.ID)) ||
+    keys.includes(String(option.item.raw?.id)))?.item || null;
+}
+
 function buildItemReference(item) {
   if (!item) {
     return {
@@ -37,6 +54,16 @@ function buildItemReference(item) {
     legacyId: item.raw?.legacyId ?? item.raw?.ID ?? item.raw?.id ?? 0,
     prefabPath: item.itemUsePrefabPath || item.raw?.itemUsePrefabPath || item.pickupPrefabPath || item.raw?.pickupPrefabPath || '',
   };
+}
+
+function normalizeRecipeId(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_ -]+/g, '')
+    .replace(/[\s-]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
 }
 
 function normalizeRecipeDraft(recipe) {
@@ -132,7 +159,18 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
         return;
       }
 
-      await saveContentNode(recipe.writePath, draft);
+      const recipeId = normalizeRecipeId(draft.recipeId || draft.displayName || draft.output?.itemName);
+      if (!recipeId) {
+        setError('Recipe ID is required.');
+        return;
+      }
+
+      const nextDraft = {
+        ...draft,
+        recipeId,
+      };
+      const writePath = recipe.isNew ? `CraftingSettings/recipes/${recipeId}` : recipe.writePath;
+      await saveContentNode(writePath, nextDraft);
       setMessage('Saved.');
       onSaved?.();
     } catch {
@@ -143,6 +181,7 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
   }
 
   const outputKey = String(draft.output?.itemId || draft.output?.itemName || '');
+  const outputItem = getSelectedItem(itemOptions, draft.output);
 
   return (
     <section className={styles.editor}>
@@ -209,6 +248,14 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
         <div className={styles.full}>
           <h4 className={styles.subheading}>Output</h4>
           <div className={styles.outputRow}>
+            <img
+              src={outputItem?.imageUrl || itemPlaceholder}
+              alt={draft.output?.itemName || draft.output?.itemId || 'Output item'}
+              className={styles.itemPreview}
+              onError={(event) => {
+                event.currentTarget.src = itemPlaceholder;
+              }}
+            />
             <label className={styles.field}>
               <span>Item</span>
               <select value={outputKey} onChange={(event) => selectOutput(event.target.value)}>
@@ -246,8 +293,17 @@ export default function CraftingRecipeAdminEditor({ recipe, items, validate, onS
           <div className={styles.ingredientList}>
             {draft.ingredients.map((ingredient, index) => {
               const ingredientKey = String(ingredient.itemId || ingredient.itemName || '');
+              const ingredientItem = getSelectedItem(itemOptions, ingredient);
               return (
                 <div key={`${ingredientKey}-${index}`} className={styles.ingredientRow}>
+                  <img
+                    src={ingredientItem?.imageUrl || itemPlaceholder}
+                    alt={ingredient.itemName || ingredient.itemId || 'Ingredient item'}
+                    className={styles.itemPreview}
+                    onError={(event) => {
+                      event.currentTarget.src = itemPlaceholder;
+                    }}
+                  />
                   <label className={styles.field}>
                     <span>Item</span>
                     <select
