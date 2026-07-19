@@ -1,0 +1,167 @@
+{
+  "Barbatos": {
+    "contactDamage": 50,
+    "meleeDamage": 50,
+    "projectileDamage": -1
+  },
+  "Bat": {
+    "contactDamage": 10,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Tortured": {
+    "contactDamage": 100,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Devi Vogin": {
+    "contactDamage": 400,
+    "meleeDamage": 75,
+    "projectileDamage": -1
+  },
+  "Makala": {
+    "contactDamage": 200,
+    "meleeDamage": 75,
+    "projectileDamage": -1
+  },
+  "Moribito": {
+    "contactDamage": 20,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Queen Dakiri": {
+    "contactDamage": 50,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Jinn": {
+    "contactDamage": 100,
+    "meleeDamage": 65,
+    "projectileDamage": -1
+  },
+  "Firie": {
+    "contactDamage": 100,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Furtle": {
+    "contactDamage": 120,
+    "meleeDamage": -1,
+    "projectileDamage": 100
+  },
+  "Zerb": {
+    "contactDamage": 100,
+    "meleeDamage": 65,
+    "projectileDamage": -1
+  },
+  "Flying Eye": {
+    "contactDamage": 100,
+    "meleeDamage": 25,
+    "projectileDamage": -1
+  },
+  "Gaki": {
+    "contactDamage": 10,
+    "meleeDamage": 35,
+    "projectileDamage": -1
+  },
+  "Dzoavits": {
+    "contactDamage": 50,
+    "meleeDamage": -1,
+    "projectileDamage": 25
+  },
+  "Gaap": {
+    "contactDamage": 25,
+    "meleeDamage": -1,
+    "projectileDamage": 20
+  },
+  "Larva": {
+    "contactDamage": 20,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Ukobach": {
+    "contactDamage": 25,
+    "meleeDamage": -1,
+    "projectileDamage": 25
+  },
+  "Malphas": {
+    "contactDamage": 25,
+    "meleeDamage": -1,
+    "projectileDamage": 100
+  },
+  "Halphas": {
+    "contactDamage": 100,
+    "meleeDamage": 80,
+    "projectileDamage": -1
+  },
+  "Mad Zombie": {
+    "contactDamage": 30,
+    "meleeDamage": 20,
+    "projectileDamage": -1
+  },
+  "Skeleton": {
+    "contactDamage": 10,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Skeleton Warrior": {
+    "contactDamage": 80,
+    "meleeDamage": 150,
+    "projectileDamage": -1
+  },
+  "Skelecap": {
+    "contactDamage": 10,
+    "meleeDamage": -1,
+    "projectileDamage": 10
+  },
+  "Leraje": {
+    "contactDamage": 35,
+    "meleeDamage": -1,
+    "projectileDamage": 25
+  },
+  "Abigor": {
+    "contactDamage": 80,
+    "meleeDamage": 120,
+    "projectileDamage": -1
+  },
+  "Ghost Skull": {
+    "contactDamage": 20,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Angul": {
+    "contactDamage": 80,
+    "meleeDamage": 180,
+    "projectileDamage": -1
+  },
+  "Skeleton Wanderer": {
+    "contactDamage": 10,
+    "meleeDamage": -1,
+    "projectileDamage": -1
+  },
+  "Weak Zombie": {
+    "contactDamage": 7,
+    "meleeDamage": 20,
+    "projectileDamage": -1
+  },
+  "Zombie": {
+    "contactDamage": 10,
+    "meleeDamage": 25,
+    "projectileDamage": -1
+  },
+  "Zwei Skeleton": {
+    "contactDamage": 80,
+    "meleeDamage": 180,
+    "projectileDamage": -1
+  },
+  "Weak Flying Eye": {
+    "contactDamage": 5,
+    "meleeDamage": 25,
+    "projectileDamage": -1
+  },
+  "Zombie Goblin": {
+    "contactDamage": 5,
+    "meleeDamage": 15,
+    "projectileDamage": -1
+  }
+}

@@ -11,7 +11,9 @@ const CORE_STATS = [
   { key: 'health', label: 'Health' },
   { key: 'defense', label: 'Defense' },
   { key: 'speed', label: 'Speed' },
-  { key: 'damage', label: 'Damage' },
+  { key: 'damage', label: 'Contact Damage' },
+  { key: 'meleeDamage', label: 'Melee Damage' },
+  { key: 'projectileDamage', label: 'Projectile Damage' },
   { key: 'experience', label: 'Experience' },
 ];
 

@@ -1,3 +1,5 @@
+import enemyDamageDefaults from '../data/enemyDamageDefaults.json';
+
 const DEFAULT_LORE =
   'A fearsome creature lurking in the shadows of Hell Cemetery, waiting to claim unwary souls.';
 
@@ -14,6 +16,8 @@ const STAT_FIELD_MAP = {
   defense: ['defense', 'Defense', 'defence'],
   speed: ['speed', 'Speed', 'moveSpeed'],
   damage: ['damageToGive', 'damage', 'Damage', 'attackDamage'],
+  meleeDamage: ['meleeDamage'],
+  projectileDamage: ['projectileDamage'],
   experience: ['experienceToGive', 'experience', 'Experience', 'xp', 'XP'],
 };
 
@@ -85,6 +89,14 @@ function unwrapEnemyRecord(record) {
 
   return null;
 }
+
+function normalizeEnemyName(value) {
+  return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+const DAMAGE_DEFAULTS_BY_NAME = new Map(
+  Object.entries(enemyDamageDefaults).map(([name, defaults]) => [normalizeEnemyName(name), defaults]),
+);
 
 function extractStat(stats, statName) {
   const value = pickField(stats, STAT_FIELD_MAP[statName]);
@@ -185,6 +197,7 @@ function buildEnemy({ category, enemyKey, stats, path, writePath }) {
 
   const categoryLabel = formatCategoryLabel(category);
   const id = `${category}_${enemyKey}`.replace(/\s+/g, '_');
+  const prefabDamageDefaults = DAMAGE_DEFAULTS_BY_NAME.get(normalizeEnemyName(name)) || null;
 
   return {
     id,
@@ -205,7 +218,9 @@ function buildEnemy({ category, enemyKey, stats, path, writePath }) {
       health: extractStat(stats, 'health'),
       defense: extractStat(stats, 'defense'),
       speed: extractStat(stats, 'speed'),
-      damage: extractStat(stats, 'damage'),
+      damage: extractStat(stats, 'damage') ?? prefabDamageDefaults?.contactDamage ?? null,
+      meleeDamage: extractStat(stats, 'meleeDamage') ?? (prefabDamageDefaults?.meleeDamage >= 0 ? prefabDamageDefaults.meleeDamage : null),
+      projectileDamage: extractStat(stats, 'projectileDamage') ?? (prefabDamageDefaults?.projectileDamage >= 0 ? prefabDamageDefaults.projectileDamage : null),
       experience: extractStat(stats, 'experience'),
     },
     lootDrops: normalizeLootDrops(stats),
@@ -219,6 +234,7 @@ function buildEnemy({ category, enemyKey, stats, path, writePath }) {
     sourcePath: path,
     writePath,
     raw: stats,
+    prefabDamageDefaults,
   };
 }
 

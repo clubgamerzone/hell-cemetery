@@ -10,7 +10,9 @@ const COMBAT_STAT_FIELDS = [
   ['speed', 'Speed', ['speed', 'Speed', 'moveSpeed']],
   ['knockbackForceX', 'Knockback X', ['knockbackForceX']],
   ['knockbackForceY', 'Knockback Y', ['knockbackForceY']],
-  ['damageToGive', 'Damage', ['damageToGive', 'damage', 'Damage', 'attackDamage']],
+  ['damageToGive', 'Contact Damage', ['damageToGive', 'damage', 'Damage', 'attackDamage']],
+  ['meleeDamage', 'Melee Damage', ['meleeDamage']],
+  ['projectileDamage', 'Projectile Damage', ['projectileDamage']],
   ['experienceToGive', 'Experience', ['experienceToGive', 'experience', 'Experience', 'xp', 'XP']],
 ];
 
@@ -97,6 +99,15 @@ const DROP_LIST_LABELS = {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value ?? {}));
+}
+
+function withPrefabDamageDefaults(raw, defaults) {
+  const next = clone(raw);
+  if (!defaults) return next;
+  if (next.damageToGive === undefined && defaults.contactDamage >= 0) next.damageToGive = defaults.contactDamage;
+  if (next.meleeDamage === undefined && defaults.meleeDamage >= 0) next.meleeDamage = defaults.meleeDamage;
+  if (next.projectileDamage === undefined && defaults.projectileDamage >= 0) next.projectileDamage = defaults.projectileDamage;
+  return next;
 }
 
 function pickExistingKey(data, keys, fallback) {
@@ -290,7 +301,7 @@ export default function EnemyAdminEditor({
   validate,
 }) {
   const fileInputRef = useRef(null);
-  const [draft, setDraft] = useState(() => clone(enemy.raw));
+  const [draft, setDraft] = useState(() => withPrefabDamageDefaults(enemy.raw, enemy.prefabDamageDefaults));
   const [drops, setDrops] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -334,7 +345,7 @@ export default function EnemyAdminEditor({
   }, [enemies]);
 
   useEffect(() => {
-    const nextDraft = clone(enemy.raw);
+    const nextDraft = withPrefabDamageDefaults(enemy.raw, enemy.prefabDamageDefaults);
     nextDraft.enemyFamily = normalizeEnumValue(nextDraft.enemyFamily, ENEMY_FAMILIES, 'DEFAULT');
     nextDraft.attackElement = normalizeEnumValue(nextDraft.attackElement, COMBAT_ELEMENTS, 'PHYSICAL');
     setDraft(nextDraft);
