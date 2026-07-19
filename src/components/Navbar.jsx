@@ -10,6 +10,7 @@ const navLinks = [
   { to: '/', labelKey: 'nav.home', end: true },
   { to: '/enemies', labelKey: 'nav.enemies' },
   { to: '/items', labelKey: 'nav.items' },
+  { to: '/subweapons', labelKey: 'nav.subweapons' },
   { to: '/crafting', labelKey: 'nav.crafting' },
   { to: '/feedback', labelKey: 'nav.feedback' },
   { to: '/profile', labelKey: 'nav.profile' },

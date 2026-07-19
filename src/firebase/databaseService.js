@@ -256,6 +256,14 @@ export async function getItems() {
   }
 }
 
+export async function getSubweaponSettings() {
+  try {
+    return await fetchNode('SubweaponSettings');
+  } catch {
+    throw new Error('Unable to load subweapon settings.');
+  }
+}
+
 export async function getCraftingSettings() {
   try {
     const { data } = await fetchFirstExisting([
