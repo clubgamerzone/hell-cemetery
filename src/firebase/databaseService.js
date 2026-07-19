@@ -264,6 +264,10 @@ export async function getSubweaponSettings() {
   }
 }
 
+export async function getGameBalanceSettings() {
+  return await fetchNode('GameBalanceSettings');
+}
+
 export async function getCraftingSettings() {
   try {
     const { data } = await fetchFirstExisting([

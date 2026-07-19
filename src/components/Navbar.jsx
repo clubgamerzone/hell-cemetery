@@ -22,7 +22,7 @@ export default function Navbar() {
   const { language, languages, setLanguage, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const visibleNavLinks = isAdmin
-    ? [...navLinks, { to: '/game-data', labelKey: 'nav.gameData' }]
+    ? [...navLinks, { to: '/balance-settings', labelKey: 'nav.balanceSettings' }, { to: '/game-data', labelKey: 'nav.gameData' }]
     : navLinks;
 
   async function handleLogout() {

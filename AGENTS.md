@@ -73,6 +73,17 @@ The sync script reads Unity prefabs from `D:\Unity\Hell Cemetery Metroivania` by
 
 ## Working rules
 
+## Global game balance configuration
+
+- Canonical Firebase path: `GameBalanceSettings`.
+- Admin page: `src/pages/BalanceSettingsPage.jsx` at `/balance-settings`.
+- Fields/defaults: `lootRate: 1`, `experienceRate: 1`, `respawnRate: 1`, `additionalRespawnSeconds: 0`.
+- Loot formula: `effectiveChance = clamp01(baseChance * lootRate)`.
+- Experience formula: `effectiveExperience = baseExperience * experienceRate`.
+- Respawn formula: `finalSeconds = baseEnemyRespawnSeconds * respawnRate + additionalRespawnSeconds`.
+- Unity loader/runtime: `D:\Unity\Hell Cemetery Metroivania\Assets\2. Scripts\EnemyScript\RespawnScript.cs`, with consumers in `EnemyLootManager.cs` and `EnemyHealth.cs`.
+- Realtime Database rule should allow public reads and writes only by admin UID `PPe2ja8SlPRwmx1pLvnihWKhtqa2`.
+
 - Preserve unrelated worktree changes.
 - Never expose or commit `.env` or Firebase credentials.
 - Run `npm run build` after web changes.

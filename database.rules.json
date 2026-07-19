@@ -12,6 +12,10 @@
       ".read": true,
       ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
     },
+    "GameBalanceSettings": {
+      ".read": true,
+      ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
+    },
     "CraftingSettings": {
       ".read": true,
       ".write": "auth != null && auth.uid == 'PPe2ja8SlPRwmx1pLvnihWKhtqa2'"
