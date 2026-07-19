@@ -61,7 +61,7 @@ The sync script reads Unity prefabs from `D:\Unity\Hell Cemetery Metroivania` by
 ## Subweapon configuration
 
 - Canonical Firebase path: `SubweaponSettings/subweapons/{knife|fireball|hammer}`.
-- Web page/defaults: `src/pages/SubweaponsPage.jsx` and `src/data/subweaponDefaults.js`.
+- Admin-only web page/defaults: `src/pages/SubweaponsPage.jsx` and `src/data/subweaponDefaults.js`; navigation and direct page access require `isAdmin`.
 - Unity schema, loader, and runtime consumer: `D:\Unity\Hell Cemetery Metroivania\Assets\2. Scripts\Player\SubWeapons.cs`.
 - Unity runtime consumer: `D:\Unity\Hell Cemetery Metroivania\Assets\2. Scripts\Player\SubWeapons.cs`.
 - The web shows prefab defaults when Firebase has no entry; only pressing Save writes the selected entry.

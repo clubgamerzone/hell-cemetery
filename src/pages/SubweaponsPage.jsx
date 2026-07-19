@@ -10,7 +10,7 @@ import styles from './SubweaponsPage.module.css';
 const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
 
 export default function SubweaponsPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading: authLoading } = useAuth();
   const [subweapons, setSubweapons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,7 +25,10 @@ export default function SubweaponsPage() {
     catch { setError('Unable to load subweapon settings.'); }
     finally { setLoading(false); }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!authLoading && isAdmin) load();
+    else if (!authLoading) setLoading(false);
+  }, [authLoading, isAdmin]);
 
   function beginEdit(value) {
     setEditing({ ...value.defaults, ...value.raw, id: value.id, writePath: value.writePath });
@@ -55,6 +58,9 @@ export default function SubweaponsPage() {
       setMessage('Firebase rejected the initialization. Publish the SubweaponSettings database rule, then try again.');
     } finally { setSaving(false); }
   }
+
+  if (authLoading) return <LoadingSpinner message="Checking admin access..." />;
+  if (!isAdmin) return <div className="page"><div className="empty-state">Administrator access is required.</div></div>;
 
   return <div className="page page--wide">
     <div className="page-header"><h1>Subweapons</h1><p>Player projectile damage, resource costs, and combat element loaded by Unity from Firebase.</p></div>
