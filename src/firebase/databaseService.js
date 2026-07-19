@@ -1,4 +1,4 @@
-import { ref, get, set } from 'firebase/database';
+import { ref, get, set, runTransaction } from 'firebase/database';
 import { database } from './firebaseConfig';
 import { parseEnemySettings, groupEnemiesByCategory } from '../utils/enemyParser';
 import { normalizeItemSettings, normalizeCraftingSettings } from '../utils/itemParser';
@@ -33,6 +33,29 @@ export async function deleteContentNode(path) {
     throw new Error('A valid Firebase path is required.');
   }
   await set(ref(database, path), null);
+}
+
+export async function saveMissingContentNodes(updates) {
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+    throw new Error('A valid Firebase update map is required.');
+  }
+  const entries = Object.entries(updates);
+  if (entries.length === 0) return;
+  if (entries.some(([path]) => !path || typeof path !== 'string')) {
+    throw new Error('Every Firebase update requires a valid path.');
+  }
+  const results = await Promise.all(entries.map(async ([path, value]) => {
+    const result = await runTransaction(
+      ref(database, path),
+      (current) => (current === null ? value : undefined),
+      { applyLocally: false },
+    );
+    return { path, written: result.committed };
+  }));
+  return {
+    written: results.filter((result) => result.written).length,
+    skipped: results.filter((result) => !result.written).length,
+  };
 }
 
 export async function getFeedbackPosts() {
