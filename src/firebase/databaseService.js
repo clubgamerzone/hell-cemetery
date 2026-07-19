@@ -260,7 +260,7 @@ export async function getSubweaponSettings() {
   try {
     return await fetchNode('SubweaponSettings');
   } catch {
-    throw new Error('Unable to load subweapon settings.');
+    return null;
   }
 }
 

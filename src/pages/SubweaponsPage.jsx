@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSubweaponSettings, saveContentNode } from '../firebase/databaseService';
+import { getSubweaponSettings, saveContentNode, saveMissingContentNodes } from '../firebase/databaseService';
 import { ELEMENTS, normalizeSubweaponSettings } from '../utils/subweaponParser';
 import { useAuth } from '../context/AuthContext';
 import GothicButton from '../components/GothicButton';
@@ -17,6 +17,7 @@ export default function SubweaponsPage() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const missing = subweapons.filter((value) => !value.existsInFirebase);
 
   async function load() {
     setLoading(true); setError('');
@@ -43,11 +44,24 @@ export default function SubweaponsPage() {
     finally { setSaving(false); }
   }
 
+  async function initializeMissing() {
+    setSaving(true); setMessage('');
+    try {
+      const updates = Object.fromEntries(missing.map((value) => [value.writePath, value.defaults]));
+      const result = await saveMissingContentNodes(updates);
+      setMessage(`Added ${result.written} missing subweapon${result.written === 1 ? '' : 's'}; skipped ${result.skipped} existing value${result.skipped === 1 ? '' : 's'}.`);
+      await load();
+    } catch {
+      setMessage('Firebase rejected the initialization. Publish the SubweaponSettings database rule, then try again.');
+    } finally { setSaving(false); }
+  }
+
   return <div className="page page--wide">
     <div className="page-header"><h1>Subweapons</h1><p>Player projectile damage, resource costs, and combat element loaded by Unity from Firebase.</p></div>
     {loading && <LoadingSpinner message="Loading subweapons..." />}
     <ErrorMessage message={error} onRetry={load} />
     {message && <div className="notice notice--info">{message}</div>}
+    {isAdmin && !loading && missing.length > 0 && <div className="notice notice--warning" style={{ marginBottom: '1.25rem' }}><p>{missing.length} subweapon{missing.length === 1 ? ' is' : 's are'} using prefab defaults and not stored in Firebase yet.</p><GothicButton size="small" onClick={initializeMissing} disabled={saving}>{saving ? 'Adding...' : 'Add missing defaults to Firebase'}</GothicButton></div>}
     {!loading && !error && <div className={styles.grid}>{subweapons.map((value) => <article key={value.id} className={styles.card}>
       <div className={styles.heading}><h2>{value.displayName}</h2><span className={value.existsInFirebase ? styles.remote : styles.fallback}>{value.existsInFirebase ? 'Firebase' : 'Prefab default'}</span></div>
       <p>{value.description}</p>
