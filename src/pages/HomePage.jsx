@@ -24,6 +24,33 @@ export default function HomePage() {
           </GothicCard>
         </div>
       </section>
+
+      <section className={styles.seoSection}>
+        <div className={styles.seoSection__intro}>
+          <h2>{t('home.seo.title')}</h2>
+          <p>{t('home.seo.body')}</p>
+        </div>
+
+        <div className={styles.seoSection__grid}>
+          <article>
+            <h3>{t('home.seo.metroidvania.title')}</h3>
+            <p>{t('home.seo.metroidvania.body')}</p>
+          </article>
+          <article>
+            <h3>{t('home.seo.action.title')}</h3>
+            <p>{t('home.seo.action.body')}</p>
+          </article>
+          <article>
+            <h3>{t('home.seo.world.title')}</h3>
+            <p>{t('home.seo.world.body')}</p>
+          </article>
+        </div>
+      </section>
+
+      <section className={styles.loreTeaser} aria-label={t('home.loreTeaser.title')}>
+        <h2>{t('home.loreTeaser.title')}</h2>
+        <p>{t('home.loreTeaser.body')}</p>
+      </section>
     </div>
   );
 }

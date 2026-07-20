@@ -15,6 +15,7 @@ import GameDataPage from './pages/GameDataPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import SubweaponsPage from './pages/SubweaponsPage';
 import BalanceSettingsPage from './pages/BalanceSettingsPage';
+import HistoryPage from './pages/HistoryPage';
 
 export default function App() {
   return (
@@ -40,6 +41,14 @@ export default function App() {
               <Route path="/balance-settings" element={<BalanceSettingsPage />} />
               <Route path="/crafting" element={<CraftingPage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
+              <Route
+                path="/history"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <HistoryPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/game-data" element={<GameDataPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             </Routes>

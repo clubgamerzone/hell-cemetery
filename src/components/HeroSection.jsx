@@ -42,6 +42,22 @@ export default function HeroSection() {
           <GothicButton to="/items" variant="ghost" size="large">
             {t('hero.items')}
           </GothicButton>
+          <GothicButton size="large" disabled title="Store page coming soon">
+            {t('hero.downloadIos')}
+          </GothicButton>
+          <GothicButton variant="secondary" size="large" disabled title="Store page coming soon">
+            {t('hero.downloadAndroid')}
+          </GothicButton>
+          <GothicButton
+            to="/play"
+            variant="ghost"
+            size="large"
+            className={styles.hero__hiddenAction}
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            {t('hero.playWeb')}
+          </GothicButton>
         </div>
       </div>
     </section>
