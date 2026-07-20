@@ -1,7 +1,6 @@
 import GothicButton from './GothicButton';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import heroPlaceholder from '../assets/images/hero-placeholder.svg';
 import styles from './HeroSection.module.css';
 
 const IOS_STORE_URL = 'https://apps.apple.com/us/app/hell-cemetery-metroidvania/id6749544780';
@@ -15,7 +14,7 @@ export default function HeroSection() {
     <section className={styles.hero}>
       <div className={styles.hero__background}>
         <img
-          src={heroPlaceholder}
+          src="/images/home/hero-cemetery-world.png"
           alt=""
           className={styles.hero__bgImage}
           aria-hidden="true"
