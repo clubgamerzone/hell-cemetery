@@ -19,6 +19,7 @@ export default function GothicButton({
   size = 'medium',
   fullWidth = false,
   to,
+  href,
   type = 'button',
   className = '',
   ...props
@@ -38,6 +39,14 @@ export default function GothicButton({
       <Link to={to} className={classes} {...props}>
         {children}
       </Link>
+    );
+  }
+
+  if (href) {
+    return (
+      <a href={href} className={classes} {...props}>
+        {children}
+      </a>
     );
   }
 

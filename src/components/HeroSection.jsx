@@ -4,6 +4,9 @@ import { useLanguage } from '../context/LanguageContext';
 import heroPlaceholder from '../assets/images/hero-placeholder.svg';
 import styles from './HeroSection.module.css';
 
+const IOS_STORE_URL = 'https://apps.apple.com/us/app/hell-cemetery-metroidvania/id6749544780';
+const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=com.ClubGamerZone.HellCemeteryMetroivania&hl=en';
+
 export default function HeroSection() {
   const { currentUser } = useAuth();
   const { t } = useLanguage();
@@ -42,10 +45,21 @@ export default function HeroSection() {
           <GothicButton to="/items" variant="ghost" size="large">
             {t('hero.items')}
           </GothicButton>
-          <GothicButton size="large" disabled title="Store page coming soon">
+          <GothicButton
+            href={IOS_STORE_URL}
+            size="large"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {t('hero.downloadIos')}
           </GothicButton>
-          <GothicButton variant="secondary" size="large" disabled title="Store page coming soon">
+          <GothicButton
+            href={ANDROID_STORE_URL}
+            variant="secondary"
+            size="large"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {t('hero.downloadAndroid')}
           </GothicButton>
           <GothicButton
