@@ -1,5 +1,4 @@
 import GothicButton from './GothicButton';
-import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import styles from './HeroSection.module.css';
 
@@ -7,7 +6,6 @@ const IOS_STORE_URL = 'https://apps.apple.com/us/app/hell-cemetery-metroidvania/
 const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=com.ClubGamerZone.HellCemeteryMetroivania&hl=en';
 
 export default function HeroSection() {
-  const { currentUser } = useAuth();
   const { t } = useLanguage();
 
   return (
@@ -29,21 +27,6 @@ export default function HeroSection() {
           {t('hero.description')}
         </p>
         <div className={styles.hero__actions}>
-          {currentUser ? (
-            <GothicButton to="/profile" size="large">
-              {t('hero.profile')}
-            </GothicButton>
-          ) : (
-            <GothicButton to="/login" size="large">
-              {t('hero.login')}
-            </GothicButton>
-          )}
-          <GothicButton to="/enemies" variant="secondary" size="large">
-            {t('hero.enemies')}
-          </GothicButton>
-          <GothicButton to="/items" variant="ghost" size="large">
-            {t('hero.items')}
-          </GothicButton>
           <GothicButton
             href={IOS_STORE_URL}
             size="large"

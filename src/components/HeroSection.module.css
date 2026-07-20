@@ -20,16 +20,16 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  opacity: 0.86;
+  opacity: 1;
 }
 
 .hero__overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(10, 8, 8, 0.55) 0%, rgba(10, 8, 8, 0.38) 42%, rgba(10, 8, 8, 0.68) 100%),
-    linear-gradient(180deg, rgba(10, 8, 8, 0.28) 0%, rgba(10, 8, 8, 0.55) 58%, var(--color-bg-dark) 100%),
-    radial-gradient(ellipse at center, rgba(139, 0, 0, 0.08) 0%, rgba(10, 8, 8, 0.78) 100%);
+    linear-gradient(90deg, rgba(10, 8, 8, 0.24) 0%, rgba(10, 8, 8, 0.08) 45%, rgba(10, 8, 8, 0.34) 100%),
+    linear-gradient(180deg, rgba(10, 8, 8, 0.08) 0%, rgba(10, 8, 8, 0.24) 62%, var(--color-bg-dark) 100%),
+    radial-gradient(ellipse at center, rgba(139, 0, 0, 0) 0%, rgba(10, 8, 8, 0.38) 100%);
 }
 
 .hero__content {

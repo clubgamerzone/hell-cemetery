@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import GothicButton from './GothicButton';
-import logoPlaceholder from '../assets/images/logo-placeholder.svg';
 import styles from './Navbar.module.css';
 
 const navLinks = [
@@ -41,7 +40,7 @@ export default function Navbar() {
       <div className={styles.navbar__inner}>
         <Link to="/" className={styles.navbar__logo} onClick={closeMenu}>
           <img
-            src={logoPlaceholder}
+            src="/images/brand/hell-cemetery-icon.png"
             alt="Hell Cemetery logo"
             className={styles['navbar__logo-img']}
           />
