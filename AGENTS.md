@@ -25,6 +25,18 @@ Use this flow when the user asks to update or push the web project:
 
 Never commit `.env`, Firebase service-account JSON, Google plist/json secrets, credential backups, or local deployment tokens.
 
+## Running the local web dev server
+
+Use this command from `D:\My projects\Hell Cemetery Web` when the user asks to run or preview the website locally:
+
+```powershell
+npx vite --host 127.0.0.1 --port 5173
+```
+
+Open the site at `http://127.0.0.1:5173/`.
+
+If port `5173` is already busy, stop the existing process on that port before restarting Vite, or use another port if the user only needs a temporary preview. The in-app browser may block `localhost`, so prefer `127.0.0.1`.
+
 ## Enemy configuration
 
 - Canonical Firebase path: `EnemySettings/Categories/{category}/{enemyKey}/enemyStats`
