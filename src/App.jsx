@@ -39,7 +39,14 @@ export default function App() {
               <Route path="/items" element={<ItemsPage />} />
               <Route path="/subweapons" element={<SubweaponsPage />} />
               <Route path="/balance-settings" element={<BalanceSettingsPage />} />
-              <Route path="/crafting" element={<CraftingPage />} />
+              <Route
+                path="/crafting"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <CraftingPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route
                 path="/history"

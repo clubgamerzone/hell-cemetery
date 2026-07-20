@@ -10,7 +10,6 @@ const navLinks = [
   { to: '/', labelKey: 'nav.home', end: true },
   { to: '/enemies', labelKey: 'nav.enemies' },
   { to: '/items', labelKey: 'nav.items' },
-  { to: '/crafting', labelKey: 'nav.crafting' },
   { to: '/feedback', labelKey: 'nav.feedback' },
   { to: '/profile', labelKey: 'nav.profile' },
   { to: '/privacy-policy', labelKey: 'nav.privacy' },
@@ -21,7 +20,7 @@ export default function Navbar() {
   const { language, languages, setLanguage, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
   const visibleNavLinks = isAdmin
-    ? [...navLinks, { to: '/subweapons', labelKey: 'nav.subweapons' }, { to: '/balance-settings', labelKey: 'nav.balanceSettings' }, { to: '/game-data', labelKey: 'nav.gameData' }]
+    ? [...navLinks, { to: '/crafting', labelKey: 'nav.crafting' }, { to: '/subweapons', labelKey: 'nav.subweapons' }, { to: '/balance-settings', labelKey: 'nav.balanceSettings' }, { to: '/game-data', labelKey: 'nav.gameData' }]
     : navLinks;
 
   async function handleLogout() {
